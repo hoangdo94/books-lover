@@ -1,6 +1,7 @@
 package hcmut.cse.bookslover;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -11,11 +12,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import java.util.ArrayList;
 
@@ -56,6 +59,7 @@ public class MainActivity extends AppCompatActivity
         initRecyclerView();
     }
 
+
     private void initCredentials() {
         CredentialsPrefs.setPrefs(getSharedPreferences(CredentialsPrefs.PREFS_NAME, 0));
         CredentialsPrefs.fetchSavedCredentials();
@@ -88,10 +92,22 @@ public class MainActivity extends AppCompatActivity
 
                 } else {
                     Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
-                    startActivity(intent);
+                    startActivityForResult(intent, 1);
                 }
             }
         });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        // Check which request we're responding to
+        if (requestCode == 1) {
+            TextView usernameTV = (TextView) findViewById(R.id.tv_username);
+            TextView emailTV = (TextView) findViewById(R.id.tv_email);
+            usernameTV.setText(CredentialsPrefs.getUsername());
+            //TODO - need to update when having user info
+            emailTV.setVisibility(View.GONE);
+        }
     }
 
     private void initSwipeRefreshLayout() {
@@ -226,4 +242,8 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+
+
+
 }
