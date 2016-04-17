@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Books Lover</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="title_activity_book_details">Giới thiệu sách</string>
+
+    <string name="action_settings">Cài đặt</string>
+    <string name="action_search">Tìm kiếm</string>
+
+    <string name="text_unkown">Không biết</string>
+</resources>
