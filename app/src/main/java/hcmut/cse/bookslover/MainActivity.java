@@ -1,7 +1,6 @@
 package hcmut.cse.bookslover;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -12,18 +11,18 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.util.ArrayList;
 
 import com.google.gson.Gson;
 import com.loopj.android.http.JsonHttpResponseHandler;
+import com.squareup.picasso.Picasso;
+
 import cz.msebera.android.httpclient.Header;
 import org.json.*;
 import hcmut.cse.bookslover.models.Book;
@@ -36,6 +35,7 @@ import jp.wasabeef.recyclerview.animators.LandingAnimator;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    NavigationView navigationView;
     ArrayList<Book> books = new ArrayList<Book>();
     SwipeRefreshLayout swipeRefreshLayout;
     RecyclerView recyclerView;
@@ -48,8 +48,6 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         gson = new Gson();
 
-        initCredentials();
-
         initToolbarAndDrawerViews();
 
         initNavigationView();
@@ -57,13 +55,6 @@ public class MainActivity extends AppCompatActivity
         initSwipeRefreshLayout();
 
         initRecyclerView();
-    }
-
-
-    private void initCredentials() {
-        CredentialsPrefs.setPrefs(getSharedPreferences(CredentialsPrefs.PREFS_NAME, 0));
-        CredentialsPrefs.fetchSavedCredentials();
-        CredentialsPrefs.clearCredentials();
     }
 
     private void initToolbarAndDrawerViews() {
@@ -80,14 +71,14 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void initNavigationView() {
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         View headerView = navigationView.getHeaderView(0);
+
         headerView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getApplicationContext(), "clicked", Toast.LENGTH_SHORT).show();
                 if (CredentialsPrefs.isLoggedIn()) {
 
                 } else {
@@ -96,17 +87,15 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         });
+
+        updateAuthenticationInfoOnNavbar();
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
         // Check which request we're responding to
         if (requestCode == 1) {
-            TextView usernameTV = (TextView) findViewById(R.id.tv_username);
-            TextView emailTV = (TextView) findViewById(R.id.tv_email);
-            usernameTV.setText(CredentialsPrefs.getUsername());
-            //TODO - need to update when having user info
-            emailTV.setVisibility(View.GONE);
+            updateAuthenticationInfoOnNavbar();
         }
     }
 
@@ -188,6 +177,29 @@ public class MainActivity extends AppCompatActivity
         startActivity(intent);
     }
 
+    private void updateAuthenticationInfoOnNavbar() {
+        View headerView = navigationView.getHeaderView(0);
+        ImageView avatar = (ImageView) headerView.findViewById(R.id.iv_avatar);
+        TextView usernameTV = (TextView) headerView.findViewById(R.id.tv_username);
+        TextView emailTV = (TextView) headerView.findViewById(R.id.tv_email);
+        Menu navMenu = navigationView.getMenu();
+        if (CredentialsPrefs.isLoggedIn()) {
+            Picasso.with(getApplicationContext())
+                    .load(CredentialsPrefs.getCurrentUser().getAbsoluteAvatarUrl())
+                    .resize(100, 100).centerCrop().into(avatar);
+            usernameTV.setText(CredentialsPrefs.getUsername());
+            emailTV.setText(CredentialsPrefs.getCurrentUser().getEmail());
+            navMenu.setGroupVisible(R.id.menu_top, true);
+            navMenu.setGroupVisible(R.id.menu_bottom, true);
+        } else {
+            avatar.setImageResource(R.mipmap.ic_launcher);
+            usernameTV.setText("Đăng nhập/Đăng ký");
+            emailTV.setText("Chưa đăng nhập!");
+            navMenu.setGroupVisible(R.id.menu_top, false);
+            navMenu.setGroupVisible(R.id.menu_bottom, false);
+        }
+    }
+
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -226,24 +238,16 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camara) {
+        if (id == R.id.nav_new) {
             // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_setting) {
-
+        } else if (id == R.id.nav_logout) {
+            CredentialsPrefs.clearCredentials();
+            updateAuthenticationInfoOnNavbar();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
-
-
-
 
 }

@@ -1,10 +1,9 @@
 package hcmut.cse.bookslover;
 
 import android.content.Context;
-import android.content.Intent;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -12,6 +11,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
@@ -19,6 +19,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import cz.msebera.android.httpclient.Header;
+import hcmut.cse.bookslover.models.User;
 import hcmut.cse.bookslover.utils.APIRequest;
 import hcmut.cse.bookslover.utils.CredentialsPrefs;
 
@@ -50,7 +51,7 @@ public class LoginActivity extends AppCompatActivity {
                         // Perform action on click
                         final String username = txtUsername.getText().toString();
                         final String password = txtPassword.getText().toString();
-                        if (username == null || password == null) return;
+                        if (username.isEmpty() || password.isEmpty()) return;
                         APIRequest.authenticate(username, password, new JsonHttpResponseHandler() {
                             @Override
                             public void onSuccess(int statusCode, Header[] headers, JSONObject r) {
@@ -61,10 +62,11 @@ public class LoginActivity extends AppCompatActivity {
                                         displayToast("Logged In!");
                                         txtUsername.setText("");
                                         txtPassword.setText("");
-                                        CredentialsPrefs.setCredentials(username, password);
-                                        JSONObject user = r.getJSONObject("data");
-                                        Boolean admin = user.getBoolean("admin");
-                                        if (admin) {
+
+                                        Gson gson = new Gson();
+                                        User user = gson.fromJson(r.getJSONObject("data").toString(), User.class);
+                                        CredentialsPrefs.saveCredentials(username, password, user);
+                                        if (user.getAdmin()) {
                                             //admin login
                                         } else {
                                             //normal user login
