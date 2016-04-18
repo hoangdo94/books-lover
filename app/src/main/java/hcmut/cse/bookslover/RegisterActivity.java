@@ -25,53 +25,57 @@ import hcmut.cse.bookslover.models.User;
 import hcmut.cse.bookslover.utils.APIRequest;
 import hcmut.cse.bookslover.utils.CredentialsPrefs;
 
-public class LoginActivity extends AppCompatActivity {
+public class RegisterActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
+        setContentView(R.layout.activity_register);
 
-        setTitle("Đăng Nhập");
+        setTitle("Đăng Kí");
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         final AutoCompleteTextView txtUsername = (AutoCompleteTextView) findViewById(R.id.username);
         final EditText txtPassword = (EditText) findViewById(R.id.password);
+        final EditText txtRePassword = (EditText) findViewById(R.id.rePassword);
+        final AutoCompleteTextView txtEmail = (AutoCompleteTextView) findViewById(R.id.email);
         final Button btnLogin = (Button) findViewById(R.id.btnLogin);
         final Button btnRegister = (Button) findViewById(R.id.btnRegister);
 
-
-        if (btnLogin != null) {
-            btnLogin.setOnClickListener(new View.OnClickListener() {
+        if (btnRegister != null) {
+            btnRegister.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     // Perform action on click
                     final String username = txtUsername.getText().toString();
                     final String password = txtPassword.getText().toString();
-                    if (username.isEmpty() || password.isEmpty()) return;
-                    APIRequest.authenticate(username, password, new JsonHttpResponseHandler() {
+                    final String rePassword = txtRePassword.getText().toString();
+                    final String email = txtEmail.getText().toString();
+                    if (username.isEmpty() || password.isEmpty() || rePassword.isEmpty() || email.isEmpty()) return;
+                    if (!rePassword.equals(password)) {
+                        displayToast("Mật khẩu không khớp nhau!");
+                        return;
+                    }
+
+                    RequestParams params = new RequestParams();
+                    params.put("username", username);
+                    params.put("password", password);
+                    params.put("email", email);
+
+                    APIRequest.post("users", params, new JsonHttpResponseHandler() {
                         @Override
                         public void onSuccess(int statusCode, Header[] headers, JSONObject r) {
                             try {
                                 int status = r.getInt("status");
                                 if (status == 1) {
-                                    //login success
-                                    displayToast("Đăng nhập thành công!");
-                                    txtUsername.setText("");
-                                    txtPassword.setText("");
-
-                                    Gson gson = new Gson();
-                                    User user = gson.fromJson(r.getJSONObject("data").toString(), User.class);
-                                    CredentialsPrefs.saveCredentials(username, password, user);
-                                    if (user.getAdmin()) {
-                                        //admin login
-                                    } else {
-                                        //normal user login
-                                    }
+                                    //register success
+                                    displayToast("Đăng kí thành công! Nhập lại thông tin để đăng nhập.");
+                                    Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
                                     finish();
+                                    startActivity(intent);
                                 } else {
-                                    //login fail
-                                    displayToast("Đăng nhập thất bại!");
+                                    //register fail
+                                    displayToast("Đăng kí thất bại");
                                 }
                             } catch (JSONException e) {
                                 e.printStackTrace();
@@ -80,18 +84,18 @@ public class LoginActivity extends AppCompatActivity {
 
                         @Override
                         public void onFailure(int statusCode, Header[] headers, Throwable e, JSONObject r) {
-                            //login fail
-                            displayToast("Đăng nhập thất bại!");
+                            //register fail
+                            displayToast("Đăng kí thất bại");
                         }
                     });
                 }
             });
         }
 
-        if (btnRegister != null) {
-            btnRegister.setOnClickListener(new View.OnClickListener() {
+        if (btnLogin != null) {
+            btnLogin.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
-                    Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+                    Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
                     finish();
                     startActivity(intent);
                 }
