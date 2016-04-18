@@ -69,15 +69,16 @@ public class RegisterActivity extends AppCompatActivity {
                                 int status = r.getInt("status");
                                 if (status == 1) {
                                     //register success
-                                    displayToast("Đăng kí thành công! Nhập lại thông tin để đăng nhập.");
+                                    displayToast("Đăng kí thành công!");
                                     Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
                                     intent.putExtra("username", username);
                                     intent.putExtra("password", password);
                                     finish();
                                     startActivity(intent);
                                 } else {
+                                    String message = r.getString("message");
                                     //register fail
-                                    displayToast("Đăng kí thất bại");
+                                    displayToast("Đăng kí thất bại: " + message);
                                 }
                             } catch (JSONException e) {
                                 e.printStackTrace();
@@ -87,7 +88,7 @@ public class RegisterActivity extends AppCompatActivity {
                         @Override
                         public void onFailure(int statusCode, Header[] headers, Throwable e, JSONObject r) {
                             //register fail
-                            displayToast("Đăng kí thất bại");
+                            displayToast("Có lỗi xãy ra, hãy thử lại sau!");
                         }
                     });
                 }

@@ -187,7 +187,7 @@ public class MainActivity extends AppCompatActivity
         if (CredentialsPrefs.isLoggedIn()) {
             Picasso.with(getApplicationContext())
                     .load(CredentialsPrefs.getCurrentUser().getAbsoluteAvatarUrl())
-                    .resize(100, 100).centerCrop().into(avatar);
+                    .resize(120, 120).centerCrop().into(avatar);
             usernameTV.setText(CredentialsPrefs.getUsername());
             emailTV.setText(CredentialsPrefs.getCurrentUser().getEmail());
             navMenu.setGroupVisible(R.id.menu_top, true);
