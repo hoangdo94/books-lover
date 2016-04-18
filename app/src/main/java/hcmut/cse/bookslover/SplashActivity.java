@@ -3,6 +3,7 @@ package hcmut.cse.bookslover;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -28,6 +29,7 @@ public class SplashActivity extends AppCompatActivity {
         final String password = CredentialsPrefs.getPassword();
 
         if (!username.isEmpty() && !password.isEmpty()) {
+            Toast.makeText(getApplicationContext(), "Đang xác thực thông tin đăng nhập...", Toast.LENGTH_SHORT).show();
             // Authenticate
             APIRequest.authenticate(username, password, new JsonHttpResponseHandler() {
                 @Override

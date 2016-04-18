@@ -241,6 +241,7 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.nav_new) {
             // Handle the camera action
         } else if (id == R.id.nav_logout) {
+            Toast.makeText(getApplicationContext(), "Đã đăng xuất!", Toast.LENGTH_SHORT).show();
             CredentialsPrefs.clearCredentials();
             updateAuthenticationInfoOnNavbar();
         }
