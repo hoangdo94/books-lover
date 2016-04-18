@@ -71,6 +71,8 @@ public class RegisterActivity extends AppCompatActivity {
                                     //register success
                                     displayToast("Đăng kí thành công! Nhập lại thông tin để đăng nhập.");
                                     Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+                                    intent.putExtra("username", username);
+                                    intent.putExtra("password", password);
                                     finish();
                                     startActivity(intent);
                                 } else {

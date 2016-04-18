@@ -41,6 +41,12 @@ public class LoginActivity extends AppCompatActivity {
         final Button btnLogin = (Button) findViewById(R.id.btnLogin);
         final Button btnRegister = (Button) findViewById(R.id.btnRegister);
 
+        // set value after register successful
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            txtUsername.setText(extras.getString("username"));
+            txtPassword.setText(extras.getString("password"));
+        }
 
         if (btnLogin != null) {
             btnLogin.setOnClickListener(new View.OnClickListener() {
