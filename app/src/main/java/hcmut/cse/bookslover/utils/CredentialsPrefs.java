@@ -46,6 +46,16 @@ public class CredentialsPrefs {
         loggedIn = true;
     }
 
+    public static void saveCredentials(String u, String p) {
+        username = u;
+        password = p;
+
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+        editor.putString("username", username);
+        editor.putString("password", password);
+        editor.commit();
+    }
+
     public static void clearCredentials() {
         username = "";
         password = "";

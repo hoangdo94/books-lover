@@ -10,6 +10,7 @@ public class User {
     private String email;
     private boolean admin;
     private String avatar;
+    private meta meta = new meta();
 
     public User() {}
 
@@ -63,6 +64,10 @@ public class User {
 
     public String getAbsoluteAvatarUrl() {
         return "http://api.ws.hoangdo.info/images/" + getAvatar();
+    }
+
+    public meta getMeta(){
+        return meta;
     }
 
 }

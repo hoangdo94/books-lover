@@ -81,7 +81,8 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 if (CredentialsPrefs.isLoggedIn()) {
-
+                    Intent intent = new Intent(getApplicationContext(), UserProfile.class);
+                    startActivity(intent);
                 } else {
                     Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
                     startActivityForResult(intent, 1);

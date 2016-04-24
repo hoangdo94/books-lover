@@ -14,11 +14,15 @@
 
     <!-- Strings related to login -->
     <string name="prompt_username">Tên đăng nhập</string>
+    <string name="prompt_name">Tên</string>
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Mật khẩu</string>
     <string name="prompt_rePassword">Nhập lại mật khẩu</string>
+    <string name="prompt_age">Tuổi</string>
+    <string name="prompt_website">Website</string>
     <string name="action_sign_up">Đăng kí</string>
     <string name="action_sign_in">Đăng nhập</string>
+    <string name="action_edit">Lưu</string>
     <string name="action_link_sign_in">Đã có tài khoản? Đăng nhập ngay.</string>
     <string name="action_link_sign_up">Chưa có tài khoản? Đăng kí ngay.</string>
     <string name="action_sign_in_short">Sign in</string>
