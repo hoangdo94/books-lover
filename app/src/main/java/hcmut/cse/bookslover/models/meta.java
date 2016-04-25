@@ -3,11 +3,11 @@ package hcmut.cse.bookslover.models;
 /**
  * Created by huy on 4/25/2016.
  */
-public class meta {
+public class Meta {
     private int age = -1;
     private String website = "";
 
-    public meta() {
+    public Meta() {
     }
     public String getWebsite(){
         return website;

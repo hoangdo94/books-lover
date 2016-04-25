@@ -10,7 +10,7 @@ public class User {
     private String email;
     private boolean admin;
     private String avatar;
-    private meta meta = new meta();
+    private Meta meta = new Meta();
 
     public User() {}
 
@@ -66,7 +66,7 @@ public class User {
         return "http://api.ws.hoangdo.info/images/" + getAvatar();
     }
 
-    public meta getMeta(){
+    public Meta getMeta(){
         return meta;
     }
 

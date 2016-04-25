@@ -38,6 +38,7 @@ public class BlurTransform implements Transformation {
         script.forEach(output);
         output.copyTo(blurredBitmap);
 
+        bitmap.recycle();
         return blurredBitmap;
     }
 

@@ -18,21 +18,36 @@
             android:id="@+id/ivImage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/book_default" />
+            android:src="@drawable/book_default"
+            android:layout_gravity="center"
+            android:layout_marginTop="-40dp" />
+
+        <ProgressBar
+            android:theme="@style/CircularProgress"
+            style="@style/Widget.AppCompat.ProgressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="-40dp"
+            android:id="@+id/loading"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/nameTV"
-            android:paddingTop="10dp"
-            android:textSize="20dp"
-            android:textColor="#FFFFFF"/>
+            android:layout_marginTop="45dp"
+            android:textSize="25sp"
+            android:textColor="#FFFFFF"
+            android:layout_gravity="center"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/emailTV"
-            android:textColor="#FFFFFF"/>
+            android:textColor="#FFFFFF"
+            android:layout_gravity="center"
+            android:textSize="20sp"
+            android:layout_marginTop="75dp"/>
     </hcmut.cse.bookslover.CustomLayout>
 
     <LinearLayout
@@ -43,7 +58,9 @@
         <ListView
             android:id="@+id/userInfo"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:listSelector="@android:color/transparent"
+            android:cacheColorHint="@android:color/transparent"/>
     </LinearLayout>
 
 </LinearLayout>

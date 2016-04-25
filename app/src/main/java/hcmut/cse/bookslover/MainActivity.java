@@ -11,7 +11,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -81,8 +80,8 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 if (CredentialsPrefs.isLoggedIn()) {
-                    Intent intent = new Intent(getApplicationContext(), UserProfile.class);
-                    startActivity(intent);
+                    Intent intent = new Intent(getApplicationContext(), UserProfileActivity.class);
+                    startActivityForResult(intent, 2);
                 } else {
                     Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
                     startActivityForResult(intent, 1);
@@ -98,6 +97,12 @@ public class MainActivity extends AppCompatActivity
         // Check which request we're responding to
         if (requestCode == 1) {
             updateAuthenticationInfoOnNavbar();
+        } else if (requestCode == 2 && data.getStringExtra("avatar").equals("1")){
+            View headerView = navigationView.getHeaderView(0);
+            ImageView avatar = (ImageView) headerView.findViewById(R.id.iv_avatar);
+            Picasso.with(getApplicationContext())
+                    .load(CredentialsPrefs.getCurrentUser().getAbsoluteAvatarUrl())
+                    .resize(120, 120).centerCrop().into(avatar);
         }
     }
 

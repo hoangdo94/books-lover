@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="hcmut.cse.bookslover.UserProfile">
+    tools:context=".UserProfileActivity">
 
     <include layout="@layout/activity_main_user_profile"/>
     <include layout="@layout/activity_edit_user_profile"/>

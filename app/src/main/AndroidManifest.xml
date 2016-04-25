@@ -41,7 +41,7 @@
             android:name=".LoginActivity"
             android:label="@string/title_activity_login" />
         <activity
-            android:name=".UserProfile"
+            android:name=".UserProfileActivity"
             android:label="Thông tin người dùng" />
         <activity
             android:name=".EditUserActivity"

@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import com.squareup.picasso.Picasso;
@@ -15,7 +16,7 @@ import hcmut.cse.bookslover.models.User;
 /**
  * Created by huy on 4/24/2016.
  */
-public class CustomLayout extends LinearLayout implements Target {
+public class CustomLayout extends FrameLayout implements Target {
 
     public CustomLayout(Context context) {
         super(context);

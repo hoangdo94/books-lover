@@ -6,52 +6,30 @@ import android.content.CursorLoader;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.BitmapShader;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Matrix;
-import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
-import android.graphics.Rect;
-import android.graphics.RectF;
-import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.preference.PreferenceActivity;
+import android.os.Handler;
 import android.provider.MediaStore;
-import android.renderscript.Allocation;
-import android.renderscript.Element;
-import android.renderscript.RenderScript;
-import android.renderscript.ScriptIntrinsicBlur;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Callback;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -72,7 +50,8 @@ import hcmut.cse.bookslover.utils.CredentialsPrefs;
 import hcmut.cse.bookslover.utils.CustomAdapter;
 import hcmut.cse.bookslover.utils.ImageHandler;
 
-public class UserProfile extends AppCompatActivity {
+
+public class UserProfileActivity extends AppCompatActivity {
     int REQUEST_CAMERA = 0, SELECT_FILE = 1;
     Button btnSelect;
     ImageView ivImage;
@@ -81,6 +60,8 @@ public class UserProfile extends AppCompatActivity {
     TextView nameTV;
     TextView emailTV;
     private CustomAdapter adapter;
+    boolean change = false;
+    ProgressBar progressBar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -96,11 +77,27 @@ public class UserProfile extends AppCompatActivity {
 
         nameTV.setText(CredentialsPrefs.getCurrentUser().getName());
         emailTV.setText(CredentialsPrefs.getCurrentUser().getEmail());
+
+        progressBar = (ProgressBar) findViewById(R.id.loading);
         //load avatar
-        Picasso.with(getApplicationContext()).load(CredentialsPrefs.getCurrentUser().getAbsoluteAvatarUrl()).resize(200, 200).centerCrop().transform(new CircleTransform(100, 0)).into(ivImage);
+        Picasso.with(getApplicationContext()).load(CredentialsPrefs.getCurrentUser().getAbsoluteAvatarUrl()).resize(200, 200).centerCrop().transform(new CircleTransform(100, 0)).into(ivImage, new Callback() {
+            @Override
+            public void onSuccess() {
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {//You will get your bitmap here
+                        progressBar.setVisibility(View.GONE);
+                    }
+                }, 100);
+            }
+            @Override
+            public void onError() {
+
+            }
+        });
 
         layout = (CustomLayout) findViewById(R.id.baseInfo);
-        Picasso.with(getApplicationContext()).load(CredentialsPrefs.getCurrentUser().getAbsoluteAvatarUrl()).transform(new BlurTransform(this, 10)).into(layout);
+        Picasso.with(getApplicationContext()).load(CredentialsPrefs.getCurrentUser().getAbsoluteAvatarUrl()).resize(350, 250).centerCrop().transform(new BlurTransform(this, 10)).into(layout);
         //load user info
         ArrayList<User> personList = new ArrayList<>();
         personList.add(CredentialsPrefs.getCurrentUser());
@@ -124,6 +121,7 @@ public class UserProfile extends AppCompatActivity {
                 startActivityForResult(intent, 2);
             }
         });
+
     }
 
 //    @Override
@@ -136,6 +134,12 @@ public class UserProfile extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
+            Intent output = new Intent();
+            if (change)
+                output.putExtra("avatar", "1");
+            else
+                output.putExtra("avatar", "0");
+            setResult(RESULT_OK, output);
             finish();
         }
         return super.onOptionsItemSelected(item);
@@ -144,7 +148,7 @@ public class UserProfile extends AppCompatActivity {
     private void selectImage() {
         final CharSequence[] items = {"Chụp ảnh mới", "Chọn ảnh có sẵn", "Hủy"};
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(UserProfile.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(UserProfileActivity.this);
         builder.setTitle("Ảnh đại diện");
         builder.setItems(items, new DialogInterface.OnClickListener() {
             @Override
@@ -168,6 +172,7 @@ public class UserProfile extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
+            progressBar.setVisibility(View.VISIBLE);
             if (requestCode == REQUEST_CAMERA) {
                 Bitmap thumbnail = (Bitmap) data.getExtras().get("data");
                 ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -241,13 +246,19 @@ public class UserProfile extends AppCompatActivity {
                                         //update success
                                         //update avatar and background
                                         ivImage.setImageBitmap(ImageHandler.getCircularBitmap(ImageHandler.resize(BitmapFactory.decodeFile(ImageLink), 200, 200), 5));
-                                        layout.setBackground(new BitmapDrawable(ImageHandler.blurBitmap(BitmapFactory.decodeFile(ImageLink), getApplicationContext())));
+                                        layout.setBackground(new BitmapDrawable(ImageHandler.resize(ImageHandler.blurBitmap(BitmapFactory.decodeFile(ImageLink), getApplicationContext()), 350, 250)));
                                         CredentialsPrefs.getCurrentUser().setAvatar(url);
+                                        change = true;
+                                        progressBar.setVisibility(View.GONE);
                                     } else {
                                         //update fail
+                                        change = false;
+                                        progressBar.setVisibility(View.GONE);
                                         displayToast("Cập nhật ảnh đại diện thất bại");
                                     }
                                 } catch (JSONException e) {
+                                    change = false;
+                                    progressBar.setVisibility(View.GONE);
                                     displayToast("Có lỗi xảy ra trong khi đang cập nhật ảnh đại diện!");
                                     e.printStackTrace();
                                 }
@@ -256,13 +267,21 @@ public class UserProfile extends AppCompatActivity {
                             @Override
                             public void onFailure(int statusCode, Header[] headers, Throwable e, JSONObject r) {
                                 //update fail
+                                change = false;
+                                progressBar.setVisibility(View.GONE);
                                 displayToast("Cập nhật ảnh đại diện không thành công!");
                             }
+
+
                         });
                     } else {
+                        change = false;
+                        progressBar.setVisibility(View.GONE);
                         displayToast("Tải ảnh lên thất bại!");
                     }
                 } catch (JSONException e) {
+                    change = false;
+                    progressBar.setVisibility(View.GONE);
                     displayToast("Có lỗi xảy ra trong quá trình tải ảnh lên!");
                     e.printStackTrace();
                 }
@@ -270,7 +289,17 @@ public class UserProfile extends AppCompatActivity {
 
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable error, JSONObject responseBody) {
+                change = false;
+                progressBar.setVisibility(View.GONE);
                 displayToast("Tải ảnh lên không thành công!");
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
+                super.onFailure(statusCode, headers, responseString, throwable);
+                change = false;
+                progressBar.setVisibility(View.GONE);
+                displayToast("Dung lượng ảnh quá lớn! Không thể tải lên thành công");
             }
         });
     }
@@ -281,6 +310,17 @@ public class UserProfile extends AppCompatActivity {
 
         Toast toast = Toast.makeText(context, message, duration);
         toast.show();
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent output = new Intent();
+        if (change)
+            output.putExtra("avatar", "1");
+        else
+            output.putExtra("avatar", "0");
+        setResult(RESULT_OK, output);
+        finish();
     }
 
 }
