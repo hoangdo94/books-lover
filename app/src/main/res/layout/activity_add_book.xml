@@ -8,10 +8,10 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="hcmut.cse.bookslover.RegisterActivity">
+    tools:context="hcmut.cse.bookslover.AddBookActivity">
 
     <ScrollView
-        android:id="@+id/register_form"
+        android:id="@+id/addBook_form"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -25,11 +25,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <AutoCompleteTextView
-                    android:id="@+id/username"
+                <EditText
+                    android:id="@+id/title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/prompt_username"
+                    android:hint="@string/prompt_title"
                     android:inputType="text"
                     android:maxLines="1"
                     android:singleLine="true" />
@@ -41,14 +41,11 @@
                 android:layout_height="wrap_content">
 
                 <EditText
-                    android:id="@+id/password"
+                    android:id="@+id/author"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/prompt_password"
-                    android:imeActionId="@+id/login"
-                    android:imeActionLabel="@string/action_sign_in_short"
-                    android:imeOptions="actionUnspecified"
-                    android:inputType="textPassword"
+                    android:hint="@string/prompt_author"
+                    android:inputType="text"
                     android:maxLines="1"
                     android:singleLine="true" />
 
@@ -59,14 +56,11 @@
                 android:layout_height="wrap_content">
 
                 <EditText
-                    android:id="@+id/rePassword"
+                    android:id="@+id/year"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/prompt_rePassword"
-                    android:imeActionId="@+id/login"
-                    android:imeActionLabel="@string/action_sign_in_short"
-                    android:imeOptions="actionUnspecified"
-                    android:inputType="textPassword"
+                    android:hint="@string/prompt_year"
+                    android:inputType="number"
                     android:maxLines="1"
                     android:singleLine="true" />
 
@@ -76,36 +70,44 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <AutoCompleteTextView
-                    android:id="@+id/email"
+                <EditText
+                    android:id="@+id/genre"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/prompt_email"
-                    android:inputType="textEmailAddress"
+                    android:hint="@string/prompt_genre"
+                    android:inputType="text"
                     android:maxLines="1"
                     android:singleLine="true" />
 
             </android.support.design.widget.TextInputLayout>
 
-            <Button
-                android:id="@+id/btnRegister"
-                style="?android:textAppearanceSmall"
+            <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/action_sign_up"
-                android:textStyle="bold" />
+                android:layout_height="wrap_content">
+
+                <EditText
+                    android:id="@+id/intro"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/prompt_intro"
+                    android:inputType="textMultiLine"
+                    android:minLines="6"
+                    android:lines="8"
+                    android:maxLines="10"
+                    android:gravity="top|left"
+                    android:singleLine="false"
+                    android:scrollbars="vertical"/>
+
+            </android.support.design.widget.TextInputLayout>
 
             <Button
-                android:id="@+id/btnLogin"
+                android:id="@+id/btnAdd"
                 style="?android:textAppearanceSmall"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="@string/action_link_sign_in"
-                android:background="?android:attr/selectableItemBackground"
-                android:textSize="15dp"
-                android:textAllCaps="false" />
+                android:text="@string/action_add"
+                android:textStyle="bold" />
 
         </LinearLayout>
     </ScrollView>

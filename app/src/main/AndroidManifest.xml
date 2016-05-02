@@ -46,6 +46,7 @@
         <activity
             android:name=".EditUserActivity"
             android:label="Cập nhật thông tin" />
+        <activity android:name=".AddBookActivity"></activity>
     </application>
 
 </manifest>

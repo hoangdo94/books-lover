@@ -246,7 +246,12 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_new) {
-            // Handle the camera action
+            if (CredentialsPrefs.isLoggedIn()) {
+                Intent intent = new Intent(this, AddBookActivity.class);
+                startActivity(intent);
+            }
+            else
+                Toast.makeText(getApplicationContext(), "Bạn chưa đăng nhập!", Toast.LENGTH_SHORT).show();
         } else if (id == R.id.nav_logout) {
             Toast.makeText(getApplicationContext(), "Đã đăng xuất!", Toast.LENGTH_SHORT).show();
             CredentialsPrefs.clearCredentials();
