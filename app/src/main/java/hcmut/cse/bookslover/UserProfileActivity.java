@@ -271,8 +271,6 @@ public class UserProfileActivity extends AppCompatActivity {
                                 progressBar.setVisibility(View.GONE);
                                 displayToast("Cập nhật ảnh đại diện không thành công!");
                             }
-
-
                         });
                     } else {
                         change = false;

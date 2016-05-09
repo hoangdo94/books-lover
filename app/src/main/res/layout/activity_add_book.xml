@@ -15,11 +15,41 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+
+
         <LinearLayout
             android:id="@+id/email_register_form"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
+
+            <hcmut.cse.bookslover.CustomLayout
+                android:layout_width="match_parent"
+                android:layout_height="250dp"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="10dp"
+                android:id="@+id/baseInfo">
+
+                <ImageView
+                    android:id="@+id/bookCover"
+                    android:layout_width="320px"
+                    android:layout_height="480px"
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="10px"
+                    android:src="@drawable/book_default"/>
+
+                <ProgressBar
+                    android:theme="@style/CircularProgress"
+                    style="@style/Widget.AppCompat.ProgressBar"
+                    android:layout_width="150px"
+                    android:layout_height="150px"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="0px"
+                    android:id="@+id/loading"
+                    android:visibility="gone"/>
+
+            </hcmut.cse.bookslover.CustomLayout>
 
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
