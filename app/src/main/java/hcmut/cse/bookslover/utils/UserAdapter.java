@@ -15,13 +15,13 @@ import hcmut.cse.bookslover.models.User;
 /**
  * Created by huy on 4/21/2016.
  */
-public class CustomAdapter extends ArrayAdapter<User> {
+public class UserAdapter extends ArrayAdapter<User> {
+
     public ArrayList<User> persons_list;
-    public CustomAdapter(Context context, ArrayList<User> persons) {
+    public UserAdapter(Context context, ArrayList<User> persons) {
         super(context, 0, persons);
         persons_list = persons;
     }
-
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         // Get the data item for this position

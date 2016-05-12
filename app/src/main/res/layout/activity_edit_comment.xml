@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="hcmut.cse.bookslover.EditCommentActivity">
+
+    <LinearLayout
+        android:id="@+id/edit_comment_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/edit_comment_ava"
+            android:layout_width="50dp"
+            android:layout_height="50dp" />
+
+        <EditText
+            android:id="@+id/edit_comment_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textNoSuggestions"/>
+    </LinearLayout>
+
+    <Button
+        android:layout_below="@+id/edit_comment_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@+id/edit_comment_btnCancel"
+        android:text="@string/action_edit"
+        android:id="@+id/edit_comment_btnEdit"
+        android:background="#D3D3D3"
+        android:textColor="#ffffff"
+        android:layout_marginRight="10dp"
+        android:clickable="false"/>
+
+    <Button
+        android:layout_below="@+id/edit_comment_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:text="@string/action_cancel"
+        android:id="@+id/edit_comment_btnCancel"
+        android:background="#ffffff" />
+</RelativeLayout>

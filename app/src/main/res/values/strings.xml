@@ -23,6 +23,7 @@
     <string name="action_sign_up">Đăng kí</string>
     <string name="action_sign_in">Đăng nhập</string>
     <string name="action_edit">Lưu</string>
+    <string name="action_cancel">Hủy</string>
     <string name="action_link_sign_in">Đã có tài khoản? Đăng nhập ngay.</string>
     <string name="action_link_sign_up">Chưa có tài khoản? Đăng kí ngay.</string>
     <!-- String related to add book-->

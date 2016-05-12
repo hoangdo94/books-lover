@@ -8,17 +8,14 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -39,16 +36,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.logging.Handler;
 
 import cz.msebera.android.httpclient.Header;
-import hcmut.cse.bookslover.models.Book;
-import hcmut.cse.bookslover.models.User;
 import hcmut.cse.bookslover.utils.APIRequest;
-import hcmut.cse.bookslover.utils.CredentialsPrefs;
-import hcmut.cse.bookslover.utils.CustomAdapter;
-import hcmut.cse.bookslover.utils.ImageHandler;
 
 public class AddBookActivity extends AppCompatActivity {
     int REQUEST_CAMERA = 0, SELECT_FILE = 1;

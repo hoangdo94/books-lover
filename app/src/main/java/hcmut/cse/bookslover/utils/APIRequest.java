@@ -23,6 +23,11 @@ public class APIRequest {
         client.post(getAbsoluteUrl(url), params, responseHandler);
     }
 
+    public static void post(Context context, String url, HttpEntity entity, AsyncHttpResponseHandler responseHandler) {
+        client.setBasicAuth(CredentialsPrefs.getUsername(), CredentialsPrefs.getPassword());
+        client.post(context, getAbsoluteUrl(url), entity, "application/json", responseHandler);
+    }
+
     public static void put(Context context, String url, HttpEntity entity, AsyncHttpResponseHandler responseHandler) {
         client.setBasicAuth(CredentialsPrefs.getUsername(), CredentialsPrefs.getPassword());
         client.put(context, getAbsoluteUrl(url), entity, "application/json", responseHandler);
@@ -31,6 +36,11 @@ public class APIRequest {
     public static void put(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
         client.setBasicAuth(CredentialsPrefs.getUsername(), CredentialsPrefs.getPassword());
         client.put(getAbsoluteUrl(url), params, responseHandler);
+    }
+
+    public static void delete(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
+        client.setBasicAuth(CredentialsPrefs.getUsername(), CredentialsPrefs.getPassword());
+        client.delete(getAbsoluteUrl(url), params, responseHandler);
     }
 
     public static void authenticate(String username, String password, AsyncHttpResponseHandler responseHandler) {

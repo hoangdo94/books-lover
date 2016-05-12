@@ -14,7 +14,6 @@ import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.view.MenuItem;
 import android.content.DialogInterface;
@@ -47,7 +46,7 @@ import hcmut.cse.bookslover.utils.APIRequest;
 import hcmut.cse.bookslover.utils.BlurTransform;
 import hcmut.cse.bookslover.utils.CircleTransform;
 import hcmut.cse.bookslover.utils.CredentialsPrefs;
-import hcmut.cse.bookslover.utils.CustomAdapter;
+import hcmut.cse.bookslover.utils.UserAdapter;
 import hcmut.cse.bookslover.utils.ImageHandler;
 
 
@@ -59,7 +58,7 @@ public class UserProfileActivity extends AppCompatActivity {
     ListView userInfo;
     TextView nameTV;
     TextView emailTV;
-    private CustomAdapter adapter;
+    private UserAdapter adapter;
     boolean change = false;
     ProgressBar progressBar;
     @Override
@@ -101,7 +100,7 @@ public class UserProfileActivity extends AppCompatActivity {
         //load user info
         ArrayList<User> personList = new ArrayList<>();
         personList.add(CredentialsPrefs.getCurrentUser());
-        adapter = new CustomAdapter(getApplicationContext(), personList);
+        adapter = new UserAdapter(getApplicationContext(), personList);
         userInfo.setAdapter(adapter);
         ivImage.setOnClickListener(new View.OnClickListener() {
 
@@ -153,14 +152,14 @@ public class UserProfileActivity extends AppCompatActivity {
         builder.setItems(items, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int item) {
-                if (items[item].equals("Chụp ảnh mới")) {
+                if (item == 0) {
                     Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                     startActivityForResult(intent, REQUEST_CAMERA);
-                } else if (items[item].equals("Chọn ảnh có sẵn")) {
+                } else if (item == 1) {
                     Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                     intent.setType("image/*");
                     startActivityForResult(Intent.createChooser(intent, "Select File"), SELECT_FILE);
-                } else if (items[item].equals("Hủy")) {
+                } else if (item == 2) {
                     dialog.dismiss();
                 }
             }
@@ -215,7 +214,7 @@ public class UserProfileActivity extends AppCompatActivity {
             emailTV.setText(CredentialsPrefs.getCurrentUser().getEmail());
             ArrayList<User> personList = new ArrayList<>();
             personList.add(CredentialsPrefs.getCurrentUser());
-            adapter = new CustomAdapter(getApplicationContext(), personList);
+            adapter = new UserAdapter(getApplicationContext(), personList);
             userInfo.setAdapter(adapter);
         }
     }
