@@ -45,7 +45,26 @@
         android:divider="@null"
         android:dividerHeight="0dp"/>
 
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
+        <ProgressBar
+            android:theme="@style/CircularProgress"
+            style="@style/Widget.AppCompat.ProgressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:id="@+id/loading"/>
+
+        <TextView
+            android:id="@+id/no_comment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/prompt_no_comment"
+            android:layout_gravity="center"
+            android:visibility="gone"/>
+    </FrameLayout>
 
     <LinearLayout
         android:id="@+id/commentLayout"
@@ -58,7 +77,7 @@
 
         <EditText
             android:id="@+id/writeComment"
-            android:hint="Write a Comment"
+            android:hint="@string/action_comment"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_weight="1"

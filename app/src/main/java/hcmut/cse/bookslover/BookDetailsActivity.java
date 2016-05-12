@@ -24,6 +24,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -31,6 +32,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.PopupWindow;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -71,7 +73,10 @@ public class BookDetailsActivity extends AppCompatActivity {
     ArrayList<Comment> comments = new ArrayList<>();
     View inflatedView;
     int editCmIndex;
-
+    int currentPage;
+    boolean isNext = false;
+    boolean flag_loading = false;
+    ProgressBar loading;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -136,6 +141,7 @@ public class BookDetailsActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 comments.clear();
+                currentPage = 1;
                 onShowPopup(v);
                 back_layout.setVisibility(View.VISIBLE);
 
@@ -144,10 +150,14 @@ public class BookDetailsActivity extends AppCompatActivity {
                     public void onSuccess(int statusCode, Header[] headers, final JSONObject responseBody) {
                         try {
                             int status = responseBody.getInt("status");
+
                             if (status == 1) {
                                 JSONArray data = responseBody.getJSONArray("data");
                                 TextView num_favorite = (TextView) inflatedView.findViewById(R.id.num_favorite);
-                                num_favorite.setText(Integer.toString(data.length()));
+                                if (data.length() == 0)
+                                    num_favorite.setText("Hãy là người đầu tiên thích sách này");
+                                else
+                                    num_favorite.setText(Integer.toString(data.length()));
                             } else {
                                 displayToast("Không thể tải được số lượt yêu thích!");
                             }
@@ -162,101 +172,8 @@ public class BookDetailsActivity extends AppCompatActivity {
                         displayToast("Có lỗi xảy ra!");
                     }
                 });
-                Log.d("bookid", book.get_id());
-                APIRequest.get("comments/" + book.get_id(), null, new JsonHttpResponseHandler() {
-                    @Override
-                    public void onSuccess(int statusCode, Header[] headers, final JSONObject responseBody) {
-                        try {
-                            int status = responseBody.getInt("status");
-                            if (status == 1) {
-                                JSONArray data = responseBody.getJSONArray("data");
-                                final ListView listView = (ListView) inflatedView.findViewById(R.id.commentsListView);
-                                Gson gson = new Gson();
 
-                                for (int i = 0; i < data.length(); i++) {
-                                    JSONObject c = data.getJSONObject(i);
-                                    Comment comment = gson.fromJson(c.toString(), Comment.class);
-                                    comments.add(comment);
-                                }
-
-                                adapter = new CommentAdapter(getApplicationContext(), comments);
-                                listView.setAdapter(adapter);
-                                //add listener
-                                listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-                                    @Override
-                                    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                                        final Comment touchCm = (Comment) listView.getItemAtPosition(position);
-
-                                        if (CredentialsPrefs.isLoggedIn() && CredentialsPrefs.getUsername().equals(touchCm.getUser().getUsername())) {
-                                            CharSequence[] items = {"Sửa", "Xóa", "Hủy"};
-                                            AlertDialog.Builder builder = new AlertDialog.Builder(BookDetailsActivity.this);
-                                            builder.setItems(items, new DialogInterface.OnClickListener() {
-                                                public void onClick(DialogInterface dialog, int item) {
-
-                                                    if (item == 0) {
-                                                        editCmIndex = comments.indexOf(touchCm);
-                                                        Intent intent = new Intent(getApplicationContext(), EditCommentActivity.class);
-                                                        intent.putExtra("edit_comment", touchCm.getContent());
-                                                        intent.putExtra("id", touchCm.get_id());
-                                                        startActivityForResult(intent, 1);
-                                                    } else if (item == 1) {
-                                                        APIRequest.delete("comments/" + touchCm.get_id(), null, new JsonHttpResponseHandler() {
-                                                            @Override
-                                                            public void onSuccess(int statusCode, Header[] headers, final JSONObject responseBody) {
-                                                                try {
-                                                                    int status = responseBody.getInt("status");
-                                                                    if (status == 1) {
-                                                                        comments.remove(touchCm);
-                                                                        adapter.notifyDataSetChanged();
-                                                                        displayToast("Đã xóa!");
-                                                                    } else {
-                                                                        displayToast("Có lỗi xảy ra!");
-                                                                    }
-                                                                } catch (JSONException e) {
-                                                                    displayToast("Có lỗi xảy ra!");
-                                                                    e.printStackTrace();
-                                                                }
-                                                            }
-
-                                                            @Override
-                                                            public void onFailure(int statusCode, Header[] headers, Throwable error, JSONObject responseBody) {
-                                                                displayToast("Có lỗi xảy ra!");
-                                                            }
-                                                        });
-                                                    } else if (item == 2) {
-                                                        dialog.dismiss();
-                                                    }
-                                                }
-                                            });
-
-                                            AlertDialog dialog = builder.create();
-                                            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-                                            WindowManager.LayoutParams wmlp = dialog.getWindow().getAttributes();
-
-                                            wmlp.gravity = Gravity.TOP | Gravity.LEFT;
-                                            wmlp.x = 0;
-                                            wmlp.y = (int) view.getY() + 90;
-
-                                            dialog.show();
-                                            dialog.getWindow().setLayout(240, WindowManager.LayoutParams.WRAP_CONTENT);
-                                        }
-                                        return false;
-                                    }
-                                });
-                            } else {
-                                displayToast("Không thể tải được các bình luận!");
-                            }
-                        } catch (JSONException e) {
-                            displayToast("Có lỗi xảy ra!");
-                            e.printStackTrace();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(int statusCode, Header[] headers, Throwable error, JSONObject responseBody) {
-                        displayToast("Có lỗi xảy ra!");
-                    }
-                });
+                getComment();
             }
         });
     }
@@ -274,7 +191,7 @@ public class BookDetailsActivity extends AppCompatActivity {
 
         // inflate the custom popup layout
         inflatedView = layoutInflater.inflate(R.layout.popup_layout, null, false);
-
+        loading = (ProgressBar) inflatedView.findViewById(R.id.loading);
         // get device size
         final Display display = getWindowManager().getDefaultDisplay();
         final Point size = new Point();
@@ -297,7 +214,7 @@ public class BookDetailsActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.length() > 0)
+                if (!s.toString().trim().equals(""))
                     send.setVisibility(View.VISIBLE);
                 else
                     send.setVisibility(View.GONE);
@@ -315,7 +232,7 @@ public class BookDetailsActivity extends AppCompatActivity {
                     displayToast("Bạn chưa đăng nhập!");
                     return;
                 }
-
+                loading.setVisibility(View.VISIBLE);
                 JsonObject jo;
                 jo = Json.createObjectBuilder()
                         .add("content", cm.getText().toString())
@@ -341,15 +258,18 @@ public class BookDetailsActivity extends AppCompatActivity {
                                 displayToast("Có lỗi xảy ra!");
                                 e.printStackTrace();
                             }
+                            loading.setVisibility(View.GONE);
                         }
 
                         @Override
                         public void onFailure(int statusCode, Header[] headers, Throwable error, JSONObject responseBody) {
                             displayToast("Có lỗi xảy ra!");
+                            loading.setVisibility(View.GONE);
                         }
                     });
                 } catch (UnsupportedEncodingException e) {
                     displayToast("Có lỗi xảy ra!");
+                    loading.setVisibility(View.GONE);
                     e.printStackTrace();
                 }
 
@@ -371,7 +291,7 @@ public class BookDetailsActivity extends AppCompatActivity {
                     case MotionEvent.ACTION_MOVE:
                         offsetX = (int) motionEvent.getRawX() - orgX;
                         offsetY = (int) motionEvent.getRawY() - orgY;
-                        if (offsetY > 400) {
+                        if (offsetY > 600) {
                             popupWindow.dismiss();
                             break;
                         }
@@ -386,13 +306,102 @@ public class BookDetailsActivity extends AppCompatActivity {
             }
         });
 
+        //listview and its listener
+        final ListView listView = (ListView) inflatedView.findViewById(R.id.commentsListView);
+        adapter = new CommentAdapter(getApplicationContext(), comments);
+        listView.setAdapter(adapter);
+        //add listener
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                final Comment touchCm = (Comment) listView.getItemAtPosition(position);
+
+                if (CredentialsPrefs.isLoggedIn() && CredentialsPrefs.getUsername().equals(touchCm.getUser().getUsername())) {
+                    CharSequence[] items = {"Sửa", "Xóa", "Hủy"};
+                    AlertDialog.Builder builder = new AlertDialog.Builder(BookDetailsActivity.this);
+                    builder.setItems(items, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int item) {
+
+                            if (item == 0) {
+                                editCmIndex = comments.indexOf(touchCm);
+                                Intent intent = new Intent(getApplicationContext(), EditCommentActivity.class);
+                                intent.putExtra("edit_comment", touchCm.getContent());
+                                intent.putExtra("id", touchCm.get_id());
+                                startActivityForResult(intent, 1);
+                            } else if (item == 1) {
+                                APIRequest.delete("comments/" + touchCm.get_id(), null, new JsonHttpResponseHandler() {
+                                    @Override
+                                    public void onSuccess(int statusCode, Header[] headers, final JSONObject responseBody) {
+                                        try {
+                                            int status = responseBody.getInt("status");
+                                            if (status == 1) {
+                                                comments.remove(touchCm);
+                                                adapter.notifyDataSetChanged();
+                                                displayToast("Đã xóa!");
+                                            } else {
+                                                displayToast("Có lỗi xảy ra!");
+                                            }
+                                        } catch (JSONException e) {
+                                            displayToast("Có lỗi xảy ra!");
+                                            e.printStackTrace();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onFailure(int statusCode, Header[] headers, Throwable error, JSONObject responseBody) {
+                                        displayToast("Có lỗi xảy ra!");
+                                    }
+                                });
+                            } else if (item == 2) {
+                                dialog.dismiss();
+                            }
+                        }
+                    });
+
+                    AlertDialog dialog = builder.create();
+                    dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                    WindowManager.LayoutParams wmlp = dialog.getWindow().getAttributes();
+
+                    wmlp.gravity = Gravity.TOP | Gravity.LEFT;
+                    wmlp.x = 0;
+                    wmlp.y = (int) view.getY() + 90;
+
+                    dialog.show();
+                    dialog.getWindow().setLayout(240, WindowManager.LayoutParams.WRAP_CONTENT);
+                }
+                return false;
+            }
+        });
+        listView.setOnScrollListener(new AbsListView.OnScrollListener() {
+
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+
+                if (firstVisibleItem + visibleItemCount == totalItemCount && totalItemCount != 0) {
+                    if (flag_loading == false) {
+                        flag_loading = true;
+                        getComment();
+                    }
+                }
+            }
+        });
+
         popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
             @Override
             public void onDismiss() {
                 send.setOnClickListener(null);
+                cm.addTextChangedListener(null);
+                inflatedView.setOnTouchListener(null);
+                listView.setOnScrollListener(null);
+                listView.setOnItemLongClickListener(null);
                 back_layout.setVisibility(View.GONE);
             }
         });
+
     }
 
     public void displayToast(String message) {
@@ -418,5 +427,51 @@ public class BookDetailsActivity extends AppCompatActivity {
             }
         }
 
+    }
+
+    public void getComment() {
+        APIRequest.get("comments/" + book.get_id() + "?page=" + Integer.toString(currentPage), null, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, final JSONObject responseBody) {
+                try {
+                    int status = responseBody.getInt("status");
+                    isNext = responseBody.getInt("page") <= responseBody.getInt("pages");
+                    if (responseBody.getInt("total") == 0)
+                        inflatedView.findViewById(R.id.no_comment).setVisibility(View.VISIBLE);
+                    if (status == 1) {
+                        JSONArray data = responseBody.getJSONArray("data");
+
+                        Gson gson = new Gson();
+
+                        for (int i = 0; i < data.length(); i++) {
+                            JSONObject c = data.getJSONObject(i);
+                            Comment comment = gson.fromJson(c.toString(), Comment.class);
+                            comments.add(comment);
+                        }
+
+                        adapter.notifyDataSetChanged();
+
+                        if (isNext) {
+                            currentPage += 1;
+                            flag_loading = false;
+                        }
+
+                    } else {
+                        displayToast("Không thể tải được các bình luận!");
+                    }
+                } catch (JSONException e) {
+                    displayToast("Có lỗi xảy ra!");
+                    e.printStackTrace();
+                }
+
+                loading.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable error, JSONObject responseBody) {
+                displayToast("Có lỗi xảy ra!");
+                loading.setVisibility(View.GONE);
+            }
+        });
     }
 }

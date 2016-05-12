@@ -20,6 +20,8 @@
     <string name="prompt_rePassword">Nhập lại mật khẩu</string>
     <string name="prompt_age">Tuổi</string>
     <string name="prompt_website">Website</string>
+    <string name="prompt_no_comment">Chưa có bình luận nào cho sách này</string>
+    <string name="action_comment">Viết bình luận...</string>
     <string name="action_sign_up">Đăng kí</string>
     <string name="action_sign_in">Đăng nhập</string>
     <string name="action_edit">Lưu</string>

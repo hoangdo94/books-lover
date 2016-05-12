@@ -59,7 +59,7 @@ public class EditCommentActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.length() == 0 || s.toString().equals(extras.getString("edit_comment"))){
+                if (s.toString().equals(extras.getString("edit_comment")) || s.toString().trim().equals("")){
                     edit.setClickable(false);
                     edit.setBackgroundColor(Color.parseColor("#d3d3d3"));
                 }
