@@ -36,4 +36,5 @@ dependencies {
     compile 'org.sufficientlysecure:html-textview:1.5'
     compile 'org.glassfish:javax.json:1.0.4'
     compile 'com.getbase:floatingactionbutton:1.10.1'
+    compile 'jp.wasabeef:richeditor-android:1.2.0'
 }

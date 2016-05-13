@@ -73,12 +73,15 @@ public class BookDetailsActivity extends AppCompatActivity {
     FloatingActionButton btn_comment;
     FloatingActionButton btn_edit;
     FloatingActionButton btn_delete;
+    FloatingActionButton btn_fav;
+    FloatingActionButton btn_unfav;
     RelativeLayout back_layout;
     private CommentAdapter adapter;
     ArrayList<Comment> comments = new ArrayList<>();
     View inflatedView;
     int editCmIndex;
     int currentPage;
+    int num_fav = 0;
     boolean isNext = false;
     boolean flag_loading = false;
     ProgressBar loading;
@@ -114,6 +117,62 @@ public class BookDetailsActivity extends AppCompatActivity {
         btn_comment = (FloatingActionButton) findViewById(R.id.book_fab_btn);
         btn_edit = (FloatingActionButton) findViewById(R.id.book_edit_btn);
         btn_delete = (FloatingActionButton) findViewById(R.id.book_del_btn);
+        btn_fav = (FloatingActionButton) findViewById(R.id.book_fav_btn);
+        btn_unfav = (FloatingActionButton) findViewById(R.id.book_unfav_btn);
+
+        APIRequest.get("favorites/book/" + book.get_id(), null, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, final JSONObject responseBody) {
+                try {
+                    int status = responseBody.getInt("status");
+
+                    if (status == 1) {
+                        num_fav = responseBody.getInt("total");
+
+                    } else {
+                        displayToast("Không thể tải được số lượt yêu thích!");
+                    }
+                } catch (JSONException e) {
+                    displayToast("Không thể tải được số lượt yêu thích!");
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable error, JSONObject responseBody) {
+                displayToast("Không thể tải được số lượt yêu thích!");
+            }
+        });
+
+        APIRequest.get("favorites/check/" + book.get_id(), null, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, final JSONObject responseBody) {
+                try {
+                    int status = responseBody.getInt("status");
+
+                    if (status == 1) {
+                        boolean data = responseBody.getBoolean("data");
+                        if (data)
+                            btn_fav.setVisibility(View.GONE);
+                        else
+                            btn_unfav.setVisibility(View.GONE);
+                    } else {
+                        btn_fav.setVisibility(View.GONE);
+                        btn_unfav.setVisibility(View.GONE);
+                    }
+                } catch (JSONException e) {
+                    btn_fav.setVisibility(View.GONE);
+                    btn_unfav.setVisibility(View.GONE);
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable error, JSONObject responseBody) {
+                btn_fav.setVisibility(View.GONE);
+                btn_unfav.setVisibility(View.GONE);
+            }
+        });
 
         updateBook();
 
@@ -121,6 +180,12 @@ public class BookDetailsActivity extends AppCompatActivity {
             btn_edit.setVisibility(View.GONE);
             btn_delete.setVisibility(View.GONE);
         }
+
+        if (!CredentialsPrefs.isLoggedIn()) {
+            btn_fav.setVisibility(View.GONE);
+            btn_unfav.setVisibility(View.GONE);
+        }
+
         btn_comment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -129,33 +194,11 @@ public class BookDetailsActivity extends AppCompatActivity {
                 onShowPopup(v);
                 back_layout.setVisibility(View.VISIBLE);
 
-                APIRequest.get("favorites/book/" + book.get_id(), null, new JsonHttpResponseHandler() {
-                    @Override
-                    public void onSuccess(int statusCode, Header[] headers, final JSONObject responseBody) {
-                        try {
-                            int status = responseBody.getInt("status");
-
-                            if (status == 1) {
-                                JSONArray data = responseBody.getJSONArray("data");
-                                TextView num_favorite = (TextView) inflatedView.findViewById(R.id.num_favorite);
-                                if (data.length() == 0)
-                                    num_favorite.setText("Hãy là người đầu tiên thích sách này");
-                                else
-                                    num_favorite.setText(Integer.toString(data.length()));
-                            } else {
-                                displayToast("Không thể tải được số lượt yêu thích!");
-                            }
-                        } catch (JSONException e) {
-                            displayToast("Có lỗi xảy ra!");
-                            e.printStackTrace();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(int statusCode, Header[] headers, Throwable error, JSONObject responseBody) {
-                        displayToast("Có lỗi xảy ra!");
-                    }
-                });
+                TextView num_favorite_tv = (TextView) inflatedView.findViewById(R.id.num_favorite);
+                if (num_fav == 0)
+                    num_favorite_tv.setText("Hãy là người đầu tiên thích sách này");
+                else
+                    num_favorite_tv.setText(Integer.toString(num_fav));
 
                 getComment();
             }
@@ -205,6 +248,62 @@ public class BookDetailsActivity extends AppCompatActivity {
                 Intent editBook = new Intent(getApplicationContext(), AddBookActivity.class);
                 editBook.putExtra("book", intent.getStringExtra("data"));
                 startActivityForResult(editBook, 2);
+            }
+        });
+
+        btn_fav.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                APIRequest.post("favorites/" + book.get_id(), null, new JsonHttpResponseHandler() {
+                    @Override
+                    public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                        try {
+                            int status = response.getInt("status");
+                            if (status == 1) {
+                                num_fav += 1;
+                                btn_fav.setVisibility(View.GONE);
+                                btn_unfav.setVisibility(View.VISIBLE);
+                            } else
+                                displayToast("Có lỗi xảy ra");
+                        } catch (JSONException e) {
+                            displayToast("Có lỗi xảy ra");
+                            e.printStackTrace();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                        displayToast("Có lỗi xảy ra");
+                    }
+                });
+            }
+        });
+
+        btn_unfav.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                APIRequest.delete("favorites/" + book.get_id(), null, new JsonHttpResponseHandler() {
+                    @Override
+                    public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                        try {
+                            int status = response.getInt("status");
+                            if (status == 1) {
+                                num_fav -= 1;
+                                btn_fav.setVisibility(View.VISIBLE);
+                                btn_unfav.setVisibility(View.GONE);
+                            } else
+                                displayToast("Có lỗi xảy ra");
+                        } catch (JSONException e) {
+                            displayToast("Có lỗi xảy ra");
+                            e.printStackTrace();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                        displayToast("Có lỗi xảy ra");
+                    }
+                });
             }
         });
     }
