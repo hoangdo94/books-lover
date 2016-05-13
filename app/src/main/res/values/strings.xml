@@ -11,6 +11,7 @@
 
     <string name="text_unkown">Không biết</string>
     <string name="title_activity_register">Đăng kí</string>
+    <string name="search">Tìm kiếm</string>
 
     <!-- Strings related to login -->
     <string name="prompt_username">Tên đăng nhập</string>

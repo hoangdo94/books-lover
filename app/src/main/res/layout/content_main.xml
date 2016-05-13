@@ -6,10 +6,21 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior" tools:showIn="@layout/app_bar_main"
     tools:context=".MainActivity">
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/search_result_count"
+        android:text="Tìm thấy 10 kết quả phù hợp"
+        android:layout_margin="7dp"
+        android:textColor="#999"
+        android:layout_gravity="center"
+        android:textAlignment="center"/>
+
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/swipe_refresh_layout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/search_result_count">
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/book_recycler_view"
