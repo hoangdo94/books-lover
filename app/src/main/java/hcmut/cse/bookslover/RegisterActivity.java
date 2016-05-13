@@ -36,10 +36,10 @@ public class RegisterActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        final AutoCompleteTextView txtUsername = (AutoCompleteTextView) findViewById(R.id.username);
+        final EditText txtUsername = (EditText) findViewById(R.id.username);
         final EditText txtPassword = (EditText) findViewById(R.id.password);
         final EditText txtRePassword = (EditText) findViewById(R.id.rePassword);
-        final AutoCompleteTextView txtEmail = (AutoCompleteTextView) findViewById(R.id.email);
+        final EditText txtEmail = (EditText) findViewById(R.id.email);
         final Button btnLogin = (Button) findViewById(R.id.btnLogin);
         final Button btnRegister = (Button) findViewById(R.id.btnRegister);
 

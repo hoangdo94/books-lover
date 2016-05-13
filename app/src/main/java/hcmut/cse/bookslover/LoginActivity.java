@@ -37,7 +37,7 @@ public class LoginActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        final AutoCompleteTextView txtUsername = (AutoCompleteTextView) findViewById(R.id.username);
+        final EditText txtUsername = (EditText) findViewById(R.id.username);
         final EditText txtPassword = (EditText) findViewById(R.id.password);
         final Button btnLogin = (Button) findViewById(R.id.btnLogin);
         final Button btnRegister = (Button) findViewById(R.id.btnRegister);
