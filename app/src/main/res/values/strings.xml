@@ -22,10 +22,13 @@
     <string name="prompt_website">Website</string>
     <string name="prompt_no_comment">Chưa có bình luận nào cho sách này</string>
     <string name="action_comment">Viết bình luận...</string>
+    <string name="action_comment_btn">Bình luận</string>
     <string name="action_sign_up">Đăng kí</string>
     <string name="action_sign_in">Đăng nhập</string>
     <string name="action_edit">Lưu</string>
     <string name="action_cancel">Hủy</string>
+    <string name="action_update">Chỉnh sửa</string>
+    <string name="action_delete">Xóa</string>
     <string name="action_link_sign_in">Đã có tài khoản? Đăng nhập ngay.</string>
     <string name="action_link_sign_up">Chưa có tài khoản? Đăng kí ngay.</string>
     <!-- String related to add book-->
