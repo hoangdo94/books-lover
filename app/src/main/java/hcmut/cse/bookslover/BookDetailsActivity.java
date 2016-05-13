@@ -82,6 +82,13 @@ public class BookDetailsActivity extends AppCompatActivity {
     boolean isNext = false;
     boolean flag_loading = false;
     ProgressBar loading;
+    //book detail layout
+    ImageView cover;
+    TextView title;
+    TextView author;
+    TextView year;
+    TextView genres;
+    HtmlTextView review;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,60 +98,24 @@ public class BookDetailsActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        Gson gson = new Gson();
-        Intent intent = getIntent();
+        final Gson gson = new Gson();
+        final Intent intent = getIntent();
         book = gson.fromJson(intent.getStringExtra("data"), Book.class);
         setTitle(book.getTitle());
 
-        ImageView cover = (ImageView) findViewById(R.id.img_cover);
-        TextView title = (TextView) findViewById(R.id.tv_title);
-        TextView author = (TextView) findViewById(R.id.tv_author);
-        TextView year = (TextView) findViewById(R.id.tv_year);
-        TextView genres = (TextView) findViewById(R.id.tv_genres);
-        HtmlTextView review = (HtmlTextView) findViewById(R.id.tv_review);
+        cover = (ImageView) findViewById(R.id.img_cover);
+        title = (TextView) findViewById(R.id.tv_title);
+        author = (TextView) findViewById(R.id.tv_author);
+        year = (TextView) findViewById(R.id.tv_year);
+        genres = (TextView) findViewById(R.id.tv_genres);
+        review = (HtmlTextView) findViewById(R.id.tv_review);
         back_layout = (RelativeLayout) findViewById(R.id.back_dim_layout);
         btn_menu = (FloatingActionsMenu) findViewById(R.id.btn_menu);
         btn_comment = (FloatingActionButton) findViewById(R.id.book_fab_btn);
         btn_edit = (FloatingActionButton) findViewById(R.id.book_edit_btn);
         btn_delete = (FloatingActionButton) findViewById(R.id.book_del_btn);
 
-        Picasso.with(getApplicationContext())
-                .load(book.getAbsoluteCoverUrl())
-                .resize(240, 360)
-                .centerCrop()
-                .into(cover);
-        try {
-            title.setText(book.getTitle());
-        } catch (Exception e) {
-            title.setText(getResources().getString(R.string.text_unkown));
-        }
-        try {
-            author.setText(book.getAuthor());
-        } catch (Exception e) {
-            author.setText(getResources().getString(R.string.text_unkown));
-        }
-        try {
-            year.setText(book.getPublishYear());
-        } catch (Exception e) {
-            year.setText(getResources().getString(R.string.text_unkown));
-        }
-        try {
-            String[] gs = book.getGenres();
-            String genresText = "";
-            for (int i=0; i<gs.length; i++) {
-                if (i > 0) genresText += ", ";
-                genresText += gs[i];
-            }
-            if (genresText.trim().isEmpty()) genresText = getResources().getString(R.string.text_unkown);
-            genres.setText(genresText);
-        } catch (Exception e) {
-            genres.setText(getResources().getString(R.string.text_unkown));
-        }
-        try {
-            review.setHtmlFromString(book.getReview(), new HtmlTextView.RemoteImageGetter());
-        } catch (Exception e) {
-            review.setHtmlFromString(" ", null);
-        }
+        updateBook();
 
         if (!CredentialsPrefs.isLoggedIn())
             btn_menu.setVisibility(View.GONE);
@@ -233,7 +204,9 @@ public class BookDetailsActivity extends AppCompatActivity {
         btn_edit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                Intent editBook = new Intent(getApplicationContext(), AddBookActivity.class);
+                editBook.putExtra("book", intent.getStringExtra("data"));
+                startActivityForResult(editBook, 2);
             }
         });
     }
@@ -486,6 +459,13 @@ public class BookDetailsActivity extends AppCompatActivity {
                 else if (data.getStringExtra("change").equals("2"))
                     displayToast("Có lỗi xảy ra!");
             }
+            else if (requestCode == 2) {
+                Bundle extras = data.getExtras();
+                if (extras != null) {
+                    book = new Gson().fromJson(extras.getString("data"), Book.class);
+                    updateBook();
+                }
+            }
         }
 
     }
@@ -534,5 +514,45 @@ public class BookDetailsActivity extends AppCompatActivity {
                 loading.setVisibility(View.GONE);
             }
         });
+    }
+
+    public void updateBook(){
+        Picasso.with(getApplicationContext())
+                .load(book.getAbsoluteCoverUrl())
+                .resize(240, 360)
+                .centerCrop()
+                .into(cover);
+        try {
+            title.setText(book.getTitle());
+        } catch (Exception e) {
+            title.setText(getResources().getString(R.string.text_unkown));
+        }
+        try {
+            author.setText(book.getAuthor());
+        } catch (Exception e) {
+            author.setText(getResources().getString(R.string.text_unkown));
+        }
+        try {
+            year.setText(book.getPublishYear());
+        } catch (Exception e) {
+            year.setText(getResources().getString(R.string.text_unkown));
+        }
+        try {
+            String[] gs = book.getGenres();
+            String genresText = "";
+            for (int i=0; i<gs.length; i++) {
+                if (i > 0) genresText += ", ";
+                genresText += gs[i];
+            }
+            if (genresText.trim().isEmpty()) genresText = getResources().getString(R.string.text_unkown);
+            genres.setText(genresText);
+        } catch (Exception e) {
+            genres.setText(getResources().getString(R.string.text_unkown));
+        }
+        try {
+            review.setHtmlFromString(book.getReview(), new HtmlTextView.RemoteImageGetter());
+        } catch (Exception e) {
+            review.setHtmlFromString(" ", null);
+        }
     }
 }

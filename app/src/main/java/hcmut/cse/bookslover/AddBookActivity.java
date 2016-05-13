@@ -13,6 +13,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -23,6 +24,7 @@ import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.squareup.picasso.Callback;
@@ -30,6 +32,7 @@ import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.sufficientlysecure.htmltextview.HtmlTextView;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -38,7 +41,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import cz.msebera.android.httpclient.Header;
+import hcmut.cse.bookslover.models.Book;
 import hcmut.cse.bookslover.utils.APIRequest;
+import hcmut.cse.bookslover.utils.ImageHandler;
 
 public class AddBookActivity extends AppCompatActivity {
     int REQUEST_CAMERA = 0, SELECT_FILE = 1;
@@ -52,6 +57,9 @@ public class AddBookActivity extends AppCompatActivity {
     Button btnAdd;
     String coverUrl = "";
     ProgressBar progressBar;
+    boolean isEdit = false;
+    Book book;
+    String imageLink = "";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,6 +77,64 @@ public class AddBookActivity extends AppCompatActivity {
         genre = (EditText) findViewById(R.id.genre);
         btnAdd = (Button) findViewById(R.id.btnAdd);
         progressBar = (ProgressBar) findViewById(R.id.loading);
+
+        Intent checkIntent = getIntent();
+        Bundle extras = checkIntent.getExtras();
+        if (extras != null) {
+            setTitle("Chỉnh sửa sách");
+            isEdit = true;
+            btnAdd.setText(R.string.action_edit);
+            progressBar.setVisibility(View.VISIBLE);
+            book = new Gson().fromJson(extras.getString("book"), Book.class);
+            Picasso.with(getApplicationContext())
+                    .load(book.getAbsoluteCoverUrl())
+                    .resize(320, 480)
+                    .centerCrop()
+                    .into(image, new Callback() {
+                        @Override
+                        public void onSuccess() {
+                            progressBar.setVisibility(View.GONE);
+                        }
+
+                        @Override
+                        public void onError() {
+                            displayToast("Không thể tải ảnh thành công!");
+                            progressBar.setVisibility(View.GONE);
+                        }
+                    });
+            try {
+                title.setText(book.getTitle());
+            } catch (Exception e) {
+                title.setText("");
+            }
+            try {
+                author.setText(book.getAuthor());
+            } catch (Exception e) {
+                author.setText("");
+            }
+            try {
+                year.setText(book.getPublishYear());
+            } catch (Exception e) {
+                year.setText("");
+            }
+            try {
+                String[] gs = book.getGenres();
+                String genresText = "";
+                for (int i=0; i<gs.length; i++) {
+                    if (i > 0) genresText += ", ";
+                    genresText += gs[i];
+                }
+                if (genresText.trim().isEmpty()) genresText = "";
+                genre.setText(genresText);
+            } catch (Exception e) {
+                genre.setText("");
+            }
+            try {
+                intro.setText(book.getReview());
+            } catch (Exception e) {
+                intro.setText("");
+            }
+        }
 
         image.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -105,43 +171,34 @@ public class AddBookActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "Bạn phải nhập tên sách và tác giả, đánh giá về sách!", Toast.LENGTH_SHORT).show();
                     return;
                 }
+                progressBar.setVisibility(View.VISIBLE);
 
                 if (!year.getText().toString().equals(""))
                     publishYear = Integer.parseInt(year.getText().toString());
 
                 RequestParams params = new RequestParams();
                 params.put("title", txtTitle);
+                book.setTitle(txtTitle);
                 params.put("author", txtAuthor);
-                if (!txtGenre.equals(""))
+                book.setAuthor(txtAuthor);
+                if (!txtGenre.equals("")) {
                     params.put("genres", txtGenre);
-                if (publishYear > 0)
+                    String gs[] = txtGenre.split(",");
+                    for (int i = 0; i < gs.length; i++) {
+                        gs[i] = gs[i].trim();
+                    }
+                    book.setGenres(gs);
+                }
+                if (publishYear > 0) {
                     params.put("publishYear", publishYear);
+                    book.setPublishYear(Integer.toString(publishYear));
+                }
                 params.put("review", txtIntro);
-                if (!coverUrl.equals(""))
-                    params.put("cover", coverUrl);
-
-                APIRequest.post("books", params, new JsonHttpResponseHandler(){
-                    @Override
-                    public void onSuccess(int statusCode, Header[] headers, JSONObject r) {
-                        try {
-                            int status = r.getInt("status");
-                            if (status == 1) {
-                                Toast.makeText(getApplicationContext(), "Sách của bạn đã được thêm!", Toast.LENGTH_SHORT).show();
-                                finish();
-                            } else {
-                                Toast.makeText(getApplicationContext(), "Thêm sách thất bại!", Toast.LENGTH_SHORT).show();
-                            }
-                        } catch (JSONException e) {
-                            Toast.makeText(getApplicationContext(), "Có lỗi xảy ra!", Toast.LENGTH_SHORT).show();
-                            e.printStackTrace();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(int statusCode, Header[] headers, Throwable e, JSONObject r) {
-                        Toast.makeText(getApplicationContext(), "Thêm sách thất bại!", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                book.setReview(txtIntro);
+                if (!imageLink.equals(""))
+                    postImage(params);
+                else
+                    postData(params);
             }
         });
     }
@@ -181,7 +238,6 @@ public class AddBookActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
-            progressBar.setVisibility(View.VISIBLE);
             if (requestCode == REQUEST_CAMERA) {
                 Bitmap thumbnail = (Bitmap) data.getExtras().get("data");
                 ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -200,8 +256,7 @@ public class AddBookActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
-                postImage(destination.getPath());
+                imageLink = destination.getPath();
             } else if (requestCode == SELECT_FILE) {
                 Uri selectedImageUri = data.getData();
                 String[] projection = {MediaStore.MediaColumns.DATA};
@@ -213,18 +268,19 @@ public class AddBookActivity extends AppCompatActivity {
 
                 String selectedImagePath = cursor.getString(column_index);
 
-                Bitmap bm;
-                bm = BitmapFactory.decodeFile(selectedImagePath);
-                postImage(selectedImagePath);
+                imageLink = selectedImagePath;
+
             }
+
+            image.setImageBitmap(ImageHandler.resize(BitmapFactory.decodeFile(imageLink), 320, 480));
             return;
         }
     }
 
-    public void postImage(final String ImageLink){
+    public void postImage(final RequestParams data_params){
         RequestParams params = new RequestParams();
         try {
-            params.put("file", new File(ImageLink));
+            params.put("file", new File(imageLink));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -235,29 +291,14 @@ public class AddBookActivity extends AppCompatActivity {
                     int status = responseBody.getInt("status");
                     coverUrl = responseBody.getJSONObject("data").get("url").toString();
                     if (status == 1) {
-                        Picasso.with(getApplicationContext())
-                                .load("http://api.ws.hoangdo.info/images/" + coverUrl)
-                                .resize(320, 480)
-                                .centerCrop()
-                                .into(image, new Callback() {
-                                    @Override
-                                    public void onSuccess() {
-                                        progressBar.setVisibility(View.GONE);
-                                    }
-
-                                    @Override
-                                    public void onError() {
-                                        displayToast("Không thể tải ảnh thành công!");
-                                        progressBar.setVisibility(View.GONE);
-                                    }
-                                });
+                        postData(data_params);
                     } else {
-                        displayToast("Tải ảnh lên thất bại!");
                         progressBar.setVisibility(View.GONE);
+                        displayToast("Tải ảnh lên thất bại!");
                     }
                 } catch (JSONException e) {
-                    displayToast("Có lỗi xảy ra trong quá trình tải ảnh lên!");
                     progressBar.setVisibility(View.GONE);
+                    displayToast("Có lỗi xảy ra trong quá trình tải ảnh lên!");
                     e.printStackTrace();
                 }
             }
@@ -283,5 +324,67 @@ public class AddBookActivity extends AppCompatActivity {
 
         Toast toast = Toast.makeText(context, message, duration);
         toast.show();
+    }
+
+    public void postData(final RequestParams data_params) {
+        if (!coverUrl.equals("")) {
+            data_params.put("cover", coverUrl);
+            book.setCover(coverUrl);
+        }
+        if (!isEdit)
+            APIRequest.post("books", data_params, new JsonHttpResponseHandler(){
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, JSONObject r) {
+                    try {
+                        int status = r.getInt("status");
+                        if (status == 1) {
+                            Toast.makeText(getApplicationContext(), "Sách của bạn đã được thêm!", Toast.LENGTH_SHORT).show();
+                            finish();
+                        } else {
+                            Toast.makeText(getApplicationContext(), "Thêm sách thất bại!", Toast.LENGTH_SHORT).show();
+                        }
+                    } catch (JSONException e) {
+                        Toast.makeText(getApplicationContext(), "Có lỗi xảy ra!", Toast.LENGTH_SHORT).show();
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onFailure(int statusCode, Header[] headers, Throwable e, JSONObject r) {
+                    Toast.makeText(getApplicationContext(), "Thêm sách thất bại!", Toast.LENGTH_SHORT).show();
+                }
+            });
+        else
+            APIRequest.put("books/" + book.get_id(), data_params, new JsonHttpResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, JSONObject r) {
+                    try {
+                        int status = r.getInt("status");
+                        if (status == 1) {
+                            displayToast("Đã chỉnh sửa");
+                            Intent output = new Intent();
+                            data_params.toString();
+                            output.putExtra("data", new Gson().toJson(book, Book.class).toString());
+                            setResult(RESULT_OK, output);
+                            finish();
+                        } else {
+                            displayToast("Có lỗi xảy ra!");
+                            finish();
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        displayToast("Có lỗi xảy ra!");
+                        finish();
+                    }
+                    progressBar.setVisibility(View.GONE);
+                }
+
+                @Override
+                public void onFailure(int statusCode, Header[] headers, Throwable e, JSONObject r) {
+                    displayToast("Có lỗi xảy ra!");
+                    progressBar.setVisibility(View.GONE);
+                    finish();
+                }
+            });
     }
 }
