@@ -134,6 +134,8 @@ public class AddBookActivity extends AppCompatActivity {
             } catch (Exception e) {
                 intro.setText("");
             }
+        } else {
+            book = new Book();
         }
 
         image.setOnClickListener(new View.OnClickListener() {
@@ -339,6 +341,9 @@ public class AddBookActivity extends AppCompatActivity {
                         int status = r.getInt("status");
                         if (status == 1) {
                             Toast.makeText(getApplicationContext(), "Sách của bạn đã được thêm!", Toast.LENGTH_SHORT).show();
+                            Intent output = new Intent();
+                            output.putExtra("data", new Gson().toJson(book, Book.class).toString());
+                            setResult(RESULT_OK, output);
                             finish();
                         } else {
                             Toast.makeText(getApplicationContext(), "Thêm sách thất bại!", Toast.LENGTH_SHORT).show();

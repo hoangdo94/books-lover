@@ -179,6 +179,9 @@ public class BookDetailsActivity extends AppCompatActivity {
                                         int status = response.getInt("status");
                                         if (status == 1) {
                                             displayToast("Đã xóa!");
+                                            Intent output = new Intent();
+                                            output.putExtra("deleted", true);
+                                            setResult(RESULT_OK, output);
                                             finish();
                                         }
                                         else
