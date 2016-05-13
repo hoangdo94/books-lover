@@ -316,7 +316,7 @@ public class MainActivity extends AppCompatActivity
                 type = 1;
                 closeMenuSearch();
                 clearSearch();
-                mSearchAction.setShowAsAction(2);
+                mSearchAction.setVisible(true);
             }
         }
     }
@@ -451,7 +451,7 @@ public class MainActivity extends AppCompatActivity
                 setTitle("Book Lovers");
                 closeMenuSearch();
                 clearSearch();
-                mSearchAction.setShowAsAction(2);
+                mSearchAction.setVisible(true);
             }
         } else if(id == R.id.nav_posted_books) {
             if (type != 2) {
@@ -462,7 +462,7 @@ public class MainActivity extends AppCompatActivity
                 setTitle("Sách đã đăng");
                 closeMenuSearch();
                 clearSearch();
-                mSearchAction.setShowAsAction(2);
+                mSearchAction.setVisible(true);
             }
         } else if(id == R.id.nav_favorite_books) {
             if (type != 3) {
@@ -473,7 +473,7 @@ public class MainActivity extends AppCompatActivity
                 setTitle("Sách yêu thích");
                 closeMenuSearch();
                 clearSearch();
-                mSearchAction.setShowAsAction(0);
+                mSearchAction.setVisible(false);
             }
         } else if (id == R.id.nav_new) {
             if (CredentialsPrefs.isLoggedIn()) {
