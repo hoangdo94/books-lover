@@ -7,7 +7,6 @@ import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.design.widget.FloatingActionButton;
 import android.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -63,11 +62,17 @@ import hcmut.cse.bookslover.models.Comment;
 import hcmut.cse.bookslover.utils.APIRequest;
 import hcmut.cse.bookslover.utils.CommentAdapter;
 import hcmut.cse.bookslover.utils.CredentialsPrefs;
+import com.getbase.floatingactionbutton.FloatingActionButton;
+import com.getbase.floatingactionbutton.FloatingActionsMenu;
+
 
 public class BookDetailsActivity extends AppCompatActivity {
     Book book;
     PopupWindow popupWindow;
-    FloatingActionButton fab;
+    FloatingActionsMenu btn_menu;
+    FloatingActionButton btn_comment;
+    FloatingActionButton btn_edit;
+    FloatingActionButton btn_delete;
     RelativeLayout back_layout;
     private CommentAdapter adapter;
     ArrayList<Comment> comments = new ArrayList<>();
@@ -97,8 +102,12 @@ public class BookDetailsActivity extends AppCompatActivity {
         TextView year = (TextView) findViewById(R.id.tv_year);
         TextView genres = (TextView) findViewById(R.id.tv_genres);
         HtmlTextView review = (HtmlTextView) findViewById(R.id.tv_review);
-        fab = (FloatingActionButton) findViewById(R.id.fab);
         back_layout = (RelativeLayout) findViewById(R.id.back_dim_layout);
+        btn_menu = (FloatingActionsMenu) findViewById(R.id.btn_menu);
+        btn_comment = (FloatingActionButton) findViewById(R.id.book_fab_btn);
+        btn_edit = (FloatingActionButton) findViewById(R.id.book_edit_btn);
+        btn_delete = (FloatingActionButton) findViewById(R.id.book_del_btn);
+
         Picasso.with(getApplicationContext())
                 .load(book.getAbsoluteCoverUrl())
                 .resize(240, 360)
@@ -137,7 +146,13 @@ public class BookDetailsActivity extends AppCompatActivity {
             review.setHtmlFromString(" ", null);
         }
 
-        fab.setOnClickListener(new View.OnClickListener() {
+        if (!CredentialsPrefs.isLoggedIn())
+            btn_menu.setVisibility(View.GONE);
+        if (CredentialsPrefs.isLoggedIn() && !CredentialsPrefs.getCurrentUser().get_id().equals(book.getUserId())) {
+            btn_edit.setVisibility(View.GONE);
+            btn_delete.setVisibility(View.GONE);
+        }
+        btn_comment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 comments.clear();
@@ -174,6 +189,51 @@ public class BookDetailsActivity extends AppCompatActivity {
                 });
 
                 getComment();
+            }
+        });
+
+        btn_delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new AlertDialog.Builder(BookDetailsActivity.this)
+                    .setTitle("Xóa sách")
+                    .setMessage("Bạn chắc chắn muốn xóa sách này?")
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setPositiveButton(R.string.action_delete, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                            APIRequest.delete("books/" + book.get_id(), null, new JsonHttpResponseHandler() {
+                                @Override
+                                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                                    try {
+                                        int status = response.getInt("status");
+                                        if (status == 1) {
+                                            displayToast("Đã xóa!");
+                                            finish();
+                                        }
+                                        else
+                                            displayToast("Có lỗi xảy ra");
+                                    } catch (JSONException e) {
+                                        displayToast("Có lỗi xảy ra");
+                                        e.printStackTrace();
+                                    }
+
+                                }
+
+                                @Override
+                                public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                                    displayToast("Có lỗi xảy ra");
+                                }
+                            });
+                        }
+                    })
+                    .setNegativeButton(R.string.action_cancel, null).show();
+            }
+        });
+
+        btn_edit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
             }
         });
     }
@@ -247,6 +307,7 @@ public class BookDetailsActivity extends AppCompatActivity {
                             try {
                                 int status = responseBody.getInt("status");
                                 if (status == 1) {
+                                    inflatedView.findViewById(R.id.no_comment).setVisibility(View.GONE);
                                     Gson gson = new Gson();
                                     comments.add(0, gson.fromJson(responseBody.getString("data"), Comment.class));
                                     adapter.notifyDataSetChanged();
