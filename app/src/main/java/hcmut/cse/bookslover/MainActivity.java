@@ -27,6 +27,7 @@ import java.util.ArrayList;
 
 import com.google.gson.Gson;
 import com.loopj.android.http.JsonHttpResponseHandler;
+import com.pushbots.push.Pushbots;
 import com.squareup.picasso.Picasso;
 
 import cz.msebera.android.httpclient.Header;
@@ -495,6 +496,7 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_logout) {
             Toast.makeText(getApplicationContext(), "Đã đăng xuất!", Toast.LENGTH_SHORT).show();
             CredentialsPrefs.clearCredentials();
+            Pushbots.sharedInstance().setAlias(null);
             updateAuthenticationInfoOnNavbar();
         }
 

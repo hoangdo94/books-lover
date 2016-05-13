@@ -16,6 +16,7 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
+import com.pushbots.push.Pushbots;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -69,6 +70,7 @@ public class LoginActivity extends AppCompatActivity {
                                     Gson gson = new Gson();
                                     User user = gson.fromJson(r.getJSONObject("data").toString(), User.class);
                                     CredentialsPrefs.saveCredentials(username, password, user);
+                                    Pushbots.sharedInstance().setAlias(user.get_id());
                                     if (user.getAdmin()) {
                                         //admin login
                                     } else {
