@@ -117,9 +117,7 @@ public class BookDetailsActivity extends AppCompatActivity {
 
         updateBook();
 
-        if (!CredentialsPrefs.isLoggedIn())
-            btn_menu.setVisibility(View.GONE);
-        if (CredentialsPrefs.isLoggedIn() && !CredentialsPrefs.getCurrentUser().get_id().equals(book.getUserId())) {
+        if (!CredentialsPrefs.isLoggedIn() || (CredentialsPrefs.isLoggedIn() && !CredentialsPrefs.getCurrentUser().get_id().equals(book.getUserId()))) {
             btn_edit.setVisibility(View.GONE);
             btn_delete.setVisibility(View.GONE);
         }
@@ -401,7 +399,7 @@ public class BookDetailsActivity extends AppCompatActivity {
                     wmlp.y = (int) view.getY() + 90;
 
                     dialog.show();
-                    dialog.getWindow().setLayout(240, WindowManager.LayoutParams.WRAP_CONTENT);
+                    dialog.getWindow().setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT);
                 }
                 return false;
             }

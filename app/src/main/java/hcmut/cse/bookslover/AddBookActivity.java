@@ -363,7 +363,6 @@ public class AddBookActivity extends AppCompatActivity {
                         if (status == 1) {
                             displayToast("Đã chỉnh sửa");
                             Intent output = new Intent();
-                            data_params.toString();
                             output.putExtra("data", new Gson().toJson(book, Book.class).toString());
                             setResult(RESULT_OK, output);
                             finish();
