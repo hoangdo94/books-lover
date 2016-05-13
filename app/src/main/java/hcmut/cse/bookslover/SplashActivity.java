@@ -7,6 +7,7 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.loopj.android.http.JsonHttpResponseHandler;
+import com.pushbots.push.Pushbots;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,6 +24,10 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
+        // Pushbots
+        Pushbots.sharedInstance().init(this);
+
+        // Authenticate
         CredentialsPrefs.setPrefs(getSharedPreferences(CredentialsPrefs.PREFS_NAME, 0));
         CredentialsPrefs.fetchSavedCredentials();
         final String username = CredentialsPrefs.getUsername();
@@ -39,6 +44,7 @@ public class SplashActivity extends AppCompatActivity {
                         if (status == 1) {
                             Gson gson = new Gson();
                             User user = gson.fromJson(r.getJSONObject("data").toString(), User.class);
+                            Pushbots.sharedInstance().setAlias(user.get_id());
                             CredentialsPrefs.saveCredentials(username, password, user);
                         }
                     } catch (JSONException e) {
