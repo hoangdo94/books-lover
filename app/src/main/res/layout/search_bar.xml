@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:inputType="text"
         android:imeOptions="actionSearch"
-        android:hint="Nhập từ khóa cần tìm ..."
+        android:hint="@string/search_hint"
         android:singleLine="true" />
 
 </LinearLayout>
