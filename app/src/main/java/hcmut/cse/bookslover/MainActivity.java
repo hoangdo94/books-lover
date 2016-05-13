@@ -29,6 +29,7 @@ import hcmut.cse.bookslover.models.Book;
 import hcmut.cse.bookslover.utils.APIRequest;
 import hcmut.cse.bookslover.utils.CredentialsPrefs;
 import hcmut.cse.bookslover.utils.BookThumbAdapter;
+import hcmut.cse.bookslover.utils.EndlessRecyclerViewScrollListener;
 import jp.wasabeef.recyclerview.adapters.AlphaInAnimationAdapter;
 import jp.wasabeef.recyclerview.animators.LandingAnimator;
 
@@ -42,11 +43,21 @@ public class MainActivity extends AppCompatActivity
     BookThumbAdapter bookThumbAdapter;
     Gson gson;
 
+    // pagination & filter
+    int currentPage;
+    int totalPage;
+    int totalItem;
+    String search;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         gson = new Gson();
+
+        currentPage = 1;
+        totalPage = 1;
+        search = null;
 
         initToolbarAndDrawerViews();
 
@@ -113,7 +124,7 @@ public class MainActivity extends AppCompatActivity
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                fetchData();
+                fetchInitialData();
             }
         });
     }
@@ -126,6 +137,14 @@ public class MainActivity extends AppCompatActivity
         recyclerView.setItemAnimator(new LandingAnimator());
         bookThumbAdapter = new BookThumbAdapter(getApplicationContext(), books);
         recyclerView.setAdapter(new AlphaInAnimationAdapter(bookThumbAdapter));
+
+        recyclerView.addOnScrollListener(new EndlessRecyclerViewScrollListener((GridLayoutManager) layoutManager) {
+            @Override
+            public void onLoadMore(int page, int totalItemsCount) {
+                System.out.println("load more Page" + page + " " + totalItemsCount);
+                fetchMoreData();
+            }
+        });
 
         bookThumbAdapter.setOnItemClickListener(new BookThumbAdapter.OnItemClickListener() {
             @Override
@@ -140,21 +159,30 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void run() {
                 swipeRefreshLayout.setRefreshing(true);
-                fetchData();
+                fetchInitialData();
             }
         });
     }
 
-    private void fetchData() {
-
+    private void fetchInitialData() {
         int size = books.size();
         books.clear();
         bookThumbAdapter.notifyItemRangeRemoved(0, size);
 
-        APIRequest.get("books", null, new JsonHttpResponseHandler() {
+        String requestRoute = "books?page=1";
+        if (search != null) {
+            requestRoute += "&search=" + search;
+        }
+        System.out.println(requestRoute);
+
+        APIRequest.get(requestRoute, null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject r) {
                 try {
+                    totalPage = r.getInt("pages");
+                    currentPage = r.getInt("page");
+                    totalItem = r.getInt("total");
+                    System.out.println("PAGE " + currentPage + "/" + totalPage + ", total " + totalItem);
                     JSONArray bs = r.getJSONArray("data");
                     for (int i = 0; i < bs.length(); i++) {
                         JSONObject b = bs.getJSONObject(i);
@@ -162,7 +190,6 @@ public class MainActivity extends AppCompatActivity
                         books.add(book);
                     }
                     bookThumbAdapter.notifyItemRangeInserted(0, books.size());
-                    Toast.makeText(getBaseContext(), "Tải thành công", Toast.LENGTH_SHORT).show();
                 } catch (JSONException e) {
                     e.printStackTrace();
                     Toast.makeText(getBaseContext(), "Có lỗi xảy ra. Vui lòng thử lại", Toast.LENGTH_LONG).show();
@@ -174,6 +201,51 @@ public class MainActivity extends AppCompatActivity
             public void onFailure(int statusCode, Header[] headers, Throwable e, JSONObject r) {
                 Toast.makeText(getBaseContext(), "Không thể gửi yêu cầu. Hãy kiểm tra lại kết nối Internet", Toast.LENGTH_LONG).show();
                 swipeRefreshLayout.setRefreshing(false);
+            }
+        });
+    }
+
+    private void fetchMoreData() {
+        if (currentPage >= totalPage) return;
+        currentPage++;
+        swipeRefreshLayout.post(new Runnable() {
+            @Override
+            public void run() {
+                swipeRefreshLayout.setRefreshing(true);
+                String requestRoute = "books?page=" + currentPage;
+                if (search != null) {
+                    requestRoute += "&search=" + search;
+                }
+                System.out.println(requestRoute);
+
+                APIRequest.get(requestRoute, null, new JsonHttpResponseHandler() {
+                    @Override
+                    public void onSuccess(int statusCode, Header[] headers, JSONObject r) {
+                        try {
+                            totalPage = r.getInt("pages");
+                            currentPage = r.getInt("page");
+                            totalItem = r.getInt("total");
+                            System.out.println("PAGE " + currentPage + "/" + totalPage + ", total " + totalItem);
+                            JSONArray bs = r.getJSONArray("data");
+                            for (int i = 0; i < bs.length(); i++) {
+                                JSONObject b = bs.getJSONObject(i);
+                                Book book = gson.fromJson(b.toString(), Book.class);
+                                books.add(book);
+                                bookThumbAdapter.notifyItemInserted(books.size() - 1);
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            Toast.makeText(getBaseContext(), "Có lỗi xảy ra. Vui lòng thử lại", Toast.LENGTH_LONG).show();
+                        }
+                        swipeRefreshLayout.setRefreshing(false);
+                    }
+
+                    @Override
+                    public void onFailure(int statusCode, Header[] headers, Throwable e, JSONObject r) {
+                        Toast.makeText(getBaseContext(), "Không thể gửi yêu cầu. Hãy kiểm tra lại kết nối Internet", Toast.LENGTH_LONG).show();
+                        swipeRefreshLayout.setRefreshing(false);
+                    }
+                });
             }
         });
     }
