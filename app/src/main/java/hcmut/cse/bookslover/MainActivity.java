@@ -1,19 +1,25 @@
 package hcmut.cse.bookslover;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -48,6 +54,10 @@ public class MainActivity extends AppCompatActivity
     int totalPage;
     int totalItem;
     String search;
+    private MenuItem mSearchAction;
+    private boolean isSearchOpened = false;
+    private EditText edtSeach;
+    private TextView resultCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,9 +65,7 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         gson = new Gson();
 
-        currentPage = 1;
-        totalPage = 1;
-        search = null;
+        initPaginationAndFilter();
 
         initToolbarAndDrawerViews();
 
@@ -66,6 +74,14 @@ public class MainActivity extends AppCompatActivity
         initSwipeRefreshLayout();
 
         initRecyclerView();
+    }
+
+    private void initPaginationAndFilter() {
+        currentPage = 1;
+        totalPage = 1;
+        search = null;
+        resultCount = (TextView) findViewById(R.id.search_result_count);
+        resultCount.setVisibility(View.GONE);
     }
 
     private void initToolbarAndDrawerViews() {
@@ -165,6 +181,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void fetchInitialData() {
+        currentPage = 1;
         int size = books.size();
         books.clear();
         bookThumbAdapter.notifyItemRangeRemoved(0, size);
@@ -183,6 +200,7 @@ public class MainActivity extends AppCompatActivity
                     currentPage = r.getInt("page");
                     totalItem = r.getInt("total");
                     System.out.println("PAGE " + currentPage + "/" + totalPage + ", total " + totalItem);
+                    resultCount.setText("Tìm thấy " + totalItem + " kết quả phù hợp");
                     JSONArray bs = r.getJSONArray("data");
                     for (int i = 0; i < bs.length(); i++) {
                         JSONObject b = bs.getJSONObject(i);
@@ -282,8 +300,11 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
+        } else if(isSearchOpened) {
+            handleMenuSearch();
         } else {
             super.onBackPressed();
         }
@@ -297,21 +318,95 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        mSearchAction = menu.findItem(R.id.action_search);
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id) {
+            case R.id.action_settings:
+                return true;
+            case R.id.action_search:
+                handleMenuSearch();
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
+    protected void handleMenuSearch(){
+        ActionBar action = getSupportActionBar(); //get the actionbar
+        final InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+
+        if(isSearchOpened){ //test if the search is open
+
+            action.setDisplayShowCustomEnabled(false); //disable a custom view inside the actionbar
+            action.setDisplayShowTitleEnabled(true); //show the title in the action bar
+
+            //hides the keyboard
+
+            imm.hideSoftInputFromWindow(edtSeach.getWindowToken(), 0);
+
+            //add the search icon in the action bar
+            mSearchAction.setIcon(getResources().getDrawable(R.drawable.ic_search_white));
+
+            isSearchOpened = false;
+            clearSearch();
+
+        } else { //open the search entry
+
+            action.setDisplayShowCustomEnabled(true); //enable it to display a
+            // custom view in the action bar.
+            action.setCustomView(R.layout.search_bar);//add the custom view
+            action.setDisplayShowTitleEnabled(false); //hide the title
+
+            edtSeach = (EditText)action.getCustomView().findViewById(R.id.edtSearch); //the text editor
+
+            //this is a listener to do a search when the user clicks on search button
+            edtSeach.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                    if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                        String search = edtSeach.getText().toString();
+                        if (search != null && search.length() > 0) {
+                            imm.hideSoftInputFromWindow(edtSeach.getWindowToken(), 0);
+                            doSearch(search);
+                        }
+                        return true;
+                    }
+                    return false;
+                }
+            });
+
+            edtSeach.requestFocus();
+
+            //open the keyboard focused in the edtSearch
+            imm.showSoftInput(edtSeach, InputMethodManager.SHOW_IMPLICIT);
+
+            //add the close icon
+            mSearchAction.setIcon(getResources().getDrawable(R.drawable.ic_cancel_white));
+
+            isSearchOpened = true;
+        }
+    }
+
+    private void clearSearch() {
+        resultCount.setVisibility(View.GONE);
+        search = null;
+        fetchInitialData();
+    }
+
+    private void doSearch(String searchTerm) {
+        resultCount.setText("Đang tìm kiếm...");
+        resultCount.setVisibility(View.VISIBLE);
+        search = searchTerm;
+        fetchInitialData();
+    }
+
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
