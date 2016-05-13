@@ -63,5 +63,23 @@
             fab:fab_title="@string/action_update"
             fab:fab_colorPressed="@color/colorPrimaryDark"/>
 
+        <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/book_fav_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            fab:fab_icon="@drawable/ic_favorite"
+            fab:fab_colorNormal="@color/colorPrimary"
+            fab:fab_title="@string/action_fav"
+            fab:fab_colorPressed="@color/colorPrimaryDark"/>
+
+        <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/book_unfav_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            fab:fab_icon="@drawable/ic_unfavorite"
+            fab:fab_colorNormal="@color/colorPrimary"
+            fab:fab_title="@string/action_unfav"
+            fab:fab_colorPressed="@color/colorPrimaryDark"/>
+
     </com.getbase.floatingactionbutton.FloatingActionsMenu>
 </android.support.design.widget.CoordinatorLayout>

@@ -40,7 +40,7 @@ public class CommentAdapter  extends ArrayAdapter<Comment> {
         TextView content = (TextView) convertView.findViewById(R.id.cm_comment);
         ImageView avatar = (ImageView) convertView.findViewById(R.id.cm_avatar);
         // Populate the data into the template view using the data object
-        name.setText(comment.getUser().getName());
+        name.setText(comment.getUser().getUsername());
         content.setText(comment.getContent());
         Picasso.with(cContext)
                 .load(comment.getUser().getAbsoluteAvatarUrl())

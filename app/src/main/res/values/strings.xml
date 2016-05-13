@@ -39,6 +39,8 @@
     <string name="prompt_genre">Thể loại</string>
     <string name="prompt_intro">Giới thiệu / Đánh giá</string>
     <string name="action_add">Thêm mới</string>
+    <string name="action_fav">Thích</string>
+    <string name="action_unfav">Hủy thích</string>
     <string name="action_sign_in_short">Sign in</string>
     <string name="error_invalid_email">This email address is invalid</string>
     <string name="error_invalid_password">This password is too short</string>
