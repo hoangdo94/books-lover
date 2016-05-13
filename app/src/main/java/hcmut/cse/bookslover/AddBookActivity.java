@@ -306,8 +306,6 @@ public class AddBookActivity extends AppCompatActivity {
         } else {
             book = new Book();
         }
-        else
-            book = new Book();
 
         image.setOnClickListener(new View.OnClickListener() {
             @Override
