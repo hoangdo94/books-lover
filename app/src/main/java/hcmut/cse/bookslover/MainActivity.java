@@ -50,6 +50,8 @@ public class MainActivity extends AppCompatActivity
     Gson gson;
 
     // pagination & filter
+    int type = 1; // 1: all books, 2: posted books, 3: favorites books
+    String userId;
     int currentPage;
     int totalPage;
     int totalItem;
@@ -186,7 +188,10 @@ public class MainActivity extends AppCompatActivity
         books.clear();
         bookThumbAdapter.notifyItemRangeRemoved(0, size);
 
-        String requestRoute = "books?page=1";
+        String requestRoute = (type != 3)?("books?page=1"):("favorites/user/" + userId + "?page=1");
+        if (type == 2) {
+            requestRoute += "&userId=" + userId;
+        }
         if (search != null) {
             requestRoute += "&search=" + search;
         }
@@ -200,7 +205,12 @@ public class MainActivity extends AppCompatActivity
                     currentPage = r.getInt("page");
                     totalItem = r.getInt("total");
                     System.out.println("PAGE " + currentPage + "/" + totalPage + ", total " + totalItem);
-                    resultCount.setText("Tìm thấy " + totalItem + " kết quả phù hợp");
+                    if (totalItem == 0 && search == null) {
+                        resultCount.setVisibility(View.VISIBLE);
+                        resultCount.setText("Không có sách nào");
+                    } else {
+                        resultCount.setText("Tìm thấy " + totalItem + " kết quả phù hợp");
+                    }
                     JSONArray bs = r.getJSONArray("data");
                     for (int i = 0; i < bs.length(); i++) {
                         JSONObject b = bs.getJSONObject(i);
@@ -230,7 +240,10 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void run() {
                 swipeRefreshLayout.setRefreshing(true);
-                String requestRoute = "books?page=" + currentPage;
+                String requestRoute = (type != 3)?("books?page=" + currentPage):("favorites/user/" + userId + "?page=" + currentPage);
+                if (type == 2) {
+                    requestRoute += "&userId=" + userId;
+                }
                 if (search != null) {
                     requestRoute += "&search=" + search;
                 }
@@ -288,12 +301,23 @@ public class MainActivity extends AppCompatActivity
             emailTV.setText(CredentialsPrefs.getCurrentUser().getEmail());
             navMenu.setGroupVisible(R.id.menu_top, true);
             navMenu.setGroupVisible(R.id.menu_bottom, true);
+            navMenu.findItem(R.id.nav_favorite_books).setVisible(true);
+            navMenu.findItem(R.id.nav_posted_books).setVisible(true);
         } else {
             avatar.setImageResource(R.mipmap.ic_launcher);
             usernameTV.setText("Đăng nhập/Đăng ký");
             emailTV.setText("Chưa đăng nhập!");
             navMenu.setGroupVisible(R.id.menu_top, false);
             navMenu.setGroupVisible(R.id.menu_bottom, false);
+            navMenu.findItem(R.id.nav_favorite_books).setVisible(false);
+            navMenu.findItem(R.id.nav_posted_books).setVisible(false);
+            if (type != 1) {
+                setTitle("Book Lovers");
+                type = 1;
+                closeMenuSearch();
+                clearSearch();
+                mSearchAction.setShowAsAction(2);
+            }
         }
     }
 
@@ -338,23 +362,32 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
+    protected void closeMenuSearch() {
+        ActionBar action = getSupportActionBar();
+        action.setDisplayShowCustomEnabled(false); //disable a custom view inside the actionbar
+        action.setDisplayShowTitleEnabled(true); //show the title in the action bar
+
+        //add the search icon in the action bar
+        mSearchAction.setIcon(getResources().getDrawable(R.drawable.ic_search_white));
+
+        isSearchOpened = false;
+    }
+
     protected void handleMenuSearch(){
         ActionBar action = getSupportActionBar(); //get the actionbar
-        final InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
         if(isSearchOpened){ //test if the search is open
 
             action.setDisplayShowCustomEnabled(false); //disable a custom view inside the actionbar
             action.setDisplayShowTitleEnabled(true); //show the title in the action bar
 
-            //hides the keyboard
-
-            imm.hideSoftInputFromWindow(edtSeach.getWindowToken(), 0);
-
             //add the search icon in the action bar
             mSearchAction.setIcon(getResources().getDrawable(R.drawable.ic_search_white));
 
             isSearchOpened = false;
+
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(edtSeach.getWindowToken(), 0);
             clearSearch();
 
         } else { //open the search entry
@@ -373,6 +406,7 @@ public class MainActivity extends AppCompatActivity
                     if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                         String search = edtSeach.getText().toString();
                         if (search != null && search.length() > 0) {
+                            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                             imm.hideSoftInputFromWindow(edtSeach.getWindowToken(), 0);
                             doSearch(search);
                         }
@@ -385,6 +419,7 @@ public class MainActivity extends AppCompatActivity
             edtSeach.requestFocus();
 
             //open the keyboard focused in the edtSearch
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.showSoftInput(edtSeach, InputMethodManager.SHOW_IMPLICIT);
 
             //add the close icon
@@ -412,7 +447,37 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_new) {
+        if (id == R.id.nav_all_books) {
+            if (type != 1) {
+                type = 1;
+                setTitle("Book Lovers");
+                closeMenuSearch();
+                clearSearch();
+                mSearchAction.setShowAsAction(2);
+            }
+        } else if(id == R.id.nav_posted_books) {
+            if (type != 2) {
+                type = 2;
+                if (CredentialsPrefs.isLoggedIn()) {
+                    userId = CredentialsPrefs.getCurrentUser().get_id();
+                }
+                setTitle("Sách đã đăng");
+                closeMenuSearch();
+                clearSearch();
+                mSearchAction.setShowAsAction(2);
+            }
+        } else if(id == R.id.nav_favorite_books) {
+            if (type != 3) {
+                type = 3;
+                if (CredentialsPrefs.isLoggedIn()) {
+                    userId = CredentialsPrefs.getCurrentUser().get_id();
+                }
+                setTitle("Sách yêu thích");
+                closeMenuSearch();
+                clearSearch();
+                mSearchAction.setShowAsAction(0);
+            }
+        } else if (id == R.id.nav_new) {
             if (CredentialsPrefs.isLoggedIn()) {
                 Intent intent = new Intent(this, AddBookActivity.class);
                 startActivity(intent);

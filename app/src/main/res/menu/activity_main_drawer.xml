@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-
+    <group android:checkableBehavior="single" android:id="@+id/menu_section">
+        <item android:id="@+id/nav_all_books" android:icon="@android:drawable/ic_menu_edit"
+            android:title="Tất cả sách" />
+        <item android:id="@+id/nav_posted_books" android:icon="@android:drawable/ic_menu_edit"
+            android:title="Sách đã đăng" />
+        <item android:id="@+id/nav_favorite_books" android:icon="@android:drawable/ic_menu_edit"
+            android:title="Sách yêu thích" />
+    </group>
     <group android:checkableBehavior="single" android:id="@+id/menu_top">
         <item android:id="@+id/nav_new" android:icon="@android:drawable/ic_menu_edit"
             android:title="Thêm sách mới" />
