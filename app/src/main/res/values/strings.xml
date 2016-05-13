@@ -48,4 +48,5 @@
         completions."
     </string>
     <string name="title_activity_login">Đăng nhập</string>
+    <string name="search_hint">Tên sách, tác giả, thể loại ...</string>
 </resources>
