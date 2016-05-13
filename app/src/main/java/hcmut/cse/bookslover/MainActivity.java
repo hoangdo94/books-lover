@@ -132,6 +132,16 @@ public class MainActivity extends AppCompatActivity
             Picasso.with(getApplicationContext())
                     .load(CredentialsPrefs.getCurrentUser().getAbsoluteAvatarUrl())
                     .resize(120, 120).centerCrop().into(avatar);
+        } else if (requestCode == 3) { // book details
+            if (resultCode == RESULT_OK) {
+                if(data.getBooleanExtra("deleted", false)) {
+                    fetchInitialData();
+                }
+            }
+        } else if (requestCode == 4) { // add book
+            if (resultCode == RESULT_OK) {
+                fetchInitialData();
+            }
         }
     }
 
@@ -284,7 +294,7 @@ public class MainActivity extends AppCompatActivity
     private void showBookDetails(Book book) {
         Intent intent = new Intent(this, BookDetailsActivity.class);
         intent.putExtra("data", gson.toJson(book, Book.class).toString());
-        startActivity(intent);
+        startActivityForResult(intent, 3);
     }
 
     private void updateAuthenticationInfoOnNavbar() {
@@ -478,7 +488,7 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_new) {
             if (CredentialsPrefs.isLoggedIn()) {
                 Intent intent = new Intent(this, AddBookActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, 4);
             }
             else
                 Toast.makeText(getApplicationContext(), "Bạn chưa đăng nhập!", Toast.LENGTH_SHORT).show();
