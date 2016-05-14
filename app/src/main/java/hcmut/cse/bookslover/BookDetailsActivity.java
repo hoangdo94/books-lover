@@ -3,29 +3,23 @@ package hcmut.cse.bookslover;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Bundle;
-import android.os.Handler;
 import android.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.view.animation.AnimationUtils;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -38,17 +32,14 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.loopj.android.http.JsonHttpResponseHandler;
-import com.loopj.android.http.RequestParams;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.sufficientlysecure.htmltextview.HtmlTextView;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Calendar;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -67,7 +58,7 @@ import com.getbase.floatingactionbutton.FloatingActionsMenu;
 
 
 public class BookDetailsActivity extends AppCompatActivity {
-    Book book;
+    String bookId;
     PopupWindow popupWindow;
     FloatingActionsMenu btn_menu;
     FloatingActionButton btn_comment;
@@ -91,7 +82,7 @@ public class BookDetailsActivity extends AppCompatActivity {
     TextView author;
     TextView year;
     TextView genres;
-    HtmlTextView review;
+    TextView review;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -101,17 +92,15 @@ public class BookDetailsActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        final Gson gson = new Gson();
         final Intent intent = getIntent();
-        book = gson.fromJson(intent.getStringExtra("data"), Book.class);
-        setTitle(book.getTitle());
+        bookId = intent.getStringExtra("bookId");
 
         cover = (ImageView) findViewById(R.id.img_cover);
         title = (TextView) findViewById(R.id.tv_title);
         author = (TextView) findViewById(R.id.tv_author);
         year = (TextView) findViewById(R.id.tv_year);
         genres = (TextView) findViewById(R.id.tv_genres);
-        review = (HtmlTextView) findViewById(R.id.tv_review);
+        review = (TextView) findViewById(R.id.tv_review);
         back_layout = (RelativeLayout) findViewById(R.id.back_dim_layout);
         btn_menu = (FloatingActionsMenu) findViewById(R.id.btn_menu);
         btn_comment = (FloatingActionButton) findViewById(R.id.book_fab_btn);
@@ -120,71 +109,11 @@ public class BookDetailsActivity extends AppCompatActivity {
         btn_fav = (FloatingActionButton) findViewById(R.id.book_fav_btn);
         btn_unfav = (FloatingActionButton) findViewById(R.id.book_unfav_btn);
 
-        APIRequest.get("favorites/book/" + book.get_id(), null, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, final JSONObject responseBody) {
-                try {
-                    int status = responseBody.getInt("status");
+        fetchFavoriteCount();
 
-                    if (status == 1) {
-                        num_fav = responseBody.getInt("total");
+        checkFavorite();
 
-                    } else {
-                        displayToast("Không thể tải được số lượt yêu thích!");
-                    }
-                } catch (JSONException e) {
-                    displayToast("Không thể tải được số lượt yêu thích!");
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable error, JSONObject responseBody) {
-                displayToast("Không thể tải được số lượt yêu thích!");
-            }
-        });
-
-        APIRequest.get("favorites/check/" + book.get_id(), null, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, final JSONObject responseBody) {
-                try {
-                    int status = responseBody.getInt("status");
-
-                    if (status == 1) {
-                        boolean data = responseBody.getBoolean("data");
-                        if (data)
-                            btn_fav.setVisibility(View.GONE);
-                        else
-                            btn_unfav.setVisibility(View.GONE);
-                    } else {
-                        btn_fav.setVisibility(View.GONE);
-                        btn_unfav.setVisibility(View.GONE);
-                    }
-                } catch (JSONException e) {
-                    btn_fav.setVisibility(View.GONE);
-                    btn_unfav.setVisibility(View.GONE);
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable error, JSONObject responseBody) {
-                btn_fav.setVisibility(View.GONE);
-                btn_unfav.setVisibility(View.GONE);
-            }
-        });
-
-        updateBook();
-
-        if (!CredentialsPrefs.isLoggedIn() || (CredentialsPrefs.isLoggedIn() && !CredentialsPrefs.getCurrentUser().get_id().equals(book.getUserId()))) {
-            btn_edit.setVisibility(View.GONE);
-            btn_delete.setVisibility(View.GONE);
-        }
-
-        if (!CredentialsPrefs.isLoggedIn()) {
-            btn_fav.setVisibility(View.GONE);
-            btn_unfav.setVisibility(View.GONE);
-        }
+        fetchBookDetails();
 
         btn_comment.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -195,12 +124,13 @@ public class BookDetailsActivity extends AppCompatActivity {
                 back_layout.setVisibility(View.VISIBLE);
 
                 TextView num_favorite_tv = (TextView) inflatedView.findViewById(R.id.num_favorite);
-                if (num_fav == 0)
+                if (num_fav == 0) {
                     num_favorite_tv.setText("Hãy là người đầu tiên thích sách này");
-                else
+                } else {
                     num_favorite_tv.setText(Integer.toString(num_fav));
+                }
 
-                getComment();
+                fetchComments();
             }
         });
 
@@ -213,7 +143,7 @@ public class BookDetailsActivity extends AppCompatActivity {
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .setPositiveButton(R.string.action_delete, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int whichButton) {
-                            APIRequest.delete("books/" + book.get_id(), null, new JsonHttpResponseHandler() {
+                            APIRequest.delete("books/" + bookId, null, new JsonHttpResponseHandler() {
                                 @Override
                                 public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                                     try {
@@ -257,7 +187,7 @@ public class BookDetailsActivity extends AppCompatActivity {
         btn_fav.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                APIRequest.post("favorites/" + book.get_id(), null, new JsonHttpResponseHandler() {
+                APIRequest.post("favorites/" + bookId, null, new JsonHttpResponseHandler() {
                     @Override
                     public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                         try {
@@ -285,7 +215,7 @@ public class BookDetailsActivity extends AppCompatActivity {
         btn_unfav.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                APIRequest.delete("favorites/" + book.get_id(), null, new JsonHttpResponseHandler() {
+                APIRequest.delete("favorites/" + bookId, null, new JsonHttpResponseHandler() {
                     @Override
                     public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                         try {
@@ -319,7 +249,65 @@ public class BookDetailsActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void onShowPopup(View v){
+    private void fetchFavoriteCount() {
+        APIRequest.get("favorites/book/" + bookId, null, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, final JSONObject responseBody) {
+                try {
+                    int status = responseBody.getInt("status");
+
+                    if (status == 1) {
+                        num_fav = responseBody.getInt("total");
+
+                    } else {
+                        displayToast("Không thể tải được số lượt yêu thích!");
+                    }
+                } catch (JSONException e) {
+                    displayToast("Không thể tải được số lượt yêu thích!");
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable error, JSONObject responseBody) {
+                displayToast("Không thể tải được số lượt yêu thích!");
+            }
+        });
+    }
+
+    private void checkFavorite() {
+        APIRequest.get("favorites/check/" + bookId, null, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, final JSONObject responseBody) {
+                try {
+                    int status = responseBody.getInt("status");
+
+                    if (status == 1) {
+                        boolean data = responseBody.getBoolean("data");
+                        if (data)
+                            btn_fav.setVisibility(View.GONE);
+                        else
+                            btn_unfav.setVisibility(View.GONE);
+                    } else {
+                        btn_fav.setVisibility(View.GONE);
+                        btn_unfav.setVisibility(View.GONE);
+                    }
+                } catch (JSONException e) {
+                    btn_fav.setVisibility(View.GONE);
+                    btn_unfav.setVisibility(View.GONE);
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable error, JSONObject responseBody) {
+                btn_fav.setVisibility(View.GONE);
+                btn_unfav.setVisibility(View.GONE);
+            }
+        });
+    }
+
+    private void onShowPopup(View v){
         LayoutInflater layoutInflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         // inflate the custom popup layout
@@ -374,7 +362,7 @@ public class BookDetailsActivity extends AppCompatActivity {
                 try {
                     entity = new ByteArrayEntity(jo.toString().getBytes("UTF-8"));
                     entity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
-                    APIRequest.post(getApplicationContext(), "comments/" + book.get_id(), entity, new JsonHttpResponseHandler() {
+                    APIRequest.post(getApplicationContext(), "comments/" + bookId, entity, new JsonHttpResponseHandler() {
                         @Override
                         public void onSuccess(int statusCode, Header[] headers, final JSONObject responseBody) {
                             try {
@@ -518,7 +506,7 @@ public class BookDetailsActivity extends AppCompatActivity {
                 if (firstVisibleItem + visibleItemCount == totalItemCount && totalItemCount != 0) {
                     if (flag_loading == false) {
                         flag_loading = true;
-                        getComment();
+                        fetchComments();
                     }
                 }
             }
@@ -538,7 +526,7 @@ public class BookDetailsActivity extends AppCompatActivity {
 
     }
 
-    public void displayToast(String message) {
+    private void displayToast(String message) {
         Context context = getApplicationContext();
         int duration = Toast.LENGTH_SHORT;
 
@@ -562,16 +550,15 @@ public class BookDetailsActivity extends AppCompatActivity {
             else if (requestCode == 2) {
                 Bundle extras = data.getExtras();
                 if (extras != null) {
-                    book = new Gson().fromJson(extras.getString("data"), Book.class);
-                    updateBook();
+                    fetchBookDetails();
                 }
             }
         }
 
     }
 
-    public void getComment() {
-        APIRequest.get("comments/" + book.get_id() + "?page=" + Integer.toString(currentPage), null, new JsonHttpResponseHandler() {
+    private void fetchComments() {
+        APIRequest.get("comments/" + bookId + "?page=" + Integer.toString(currentPage), null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, final JSONObject responseBody) {
                 try {
@@ -616,43 +603,72 @@ public class BookDetailsActivity extends AppCompatActivity {
         });
     }
 
-    public void updateBook(){
-        Picasso.with(getApplicationContext())
-                .load(book.getAbsoluteCoverUrl())
-                .resize(240, 360)
-                .centerCrop()
-                .into(cover);
-        try {
-            title.setText(book.getTitle());
-        } catch (Exception e) {
-            title.setText(getResources().getString(R.string.text_unkown));
-        }
-        try {
-            author.setText(book.getAuthor());
-        } catch (Exception e) {
-            author.setText(getResources().getString(R.string.text_unkown));
-        }
-        try {
-            year.setText(book.getPublishYear());
-        } catch (Exception e) {
-            year.setText(getResources().getString(R.string.text_unkown));
-        }
-        try {
-            String[] gs = book.getGenres();
-            String genresText = "";
-            for (int i=0; i<gs.length; i++) {
-                if (i > 0) genresText += ", ";
-                genresText += gs[i];
+    private void fetchBookDetails(){
+        APIRequest.get("books/" + bookId, null, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, final JSONObject responseBody) {
+                try {
+                    JSONObject bkjson = responseBody.getJSONObject("data");
+                    System.out.println(bkjson.toString());
+                    Gson gson = new Gson();
+                    Book book = gson.fromJson(bkjson.toString(), Book.class);
+
+                    Picasso.with(getApplicationContext())
+                            .load(book.getAbsoluteCoverUrl())
+                            .resize(320, 480)
+                            .centerCrop()
+                            .into(cover);
+                    try {
+                        title.setText(book.getTitle());
+                    } catch (Exception e) {
+                        title.setText(getResources().getString(R.string.text_unkown));
+                    }
+                    try {
+                        author.setText(book.getAuthor());
+                    } catch (Exception e) {
+                        author.setText(getResources().getString(R.string.text_unkown));
+                    }
+                    try {
+                        year.setText(book.getPublishYear());
+                    } catch (Exception e) {
+                        year.setText(getResources().getString(R.string.text_unkown));
+                    }
+                    try {
+                        String[] gs = book.getGenres();
+                        String genresText = "";
+                        for (int i=0; i<gs.length; i++) {
+                            if (i > 0) genresText += ", ";
+                            genresText += gs[i];
+                        }
+                        if (genresText.trim().isEmpty()) genresText = getResources().getString(R.string.text_unkown);
+                        genres.setText(genresText);
+                    } catch (Exception e) {
+                        genres.setText(getResources().getString(R.string.text_unkown));
+                    }
+                    try {
+                        review.setText(book.getReview());
+                    } catch (Exception e) {
+                        review.setText("");
+                    }
+
+                    if (!CredentialsPrefs.isLoggedIn() || (CredentialsPrefs.isLoggedIn() && !CredentialsPrefs.getCurrentUser().get_id().equals(book.getUserId()))) {
+                        btn_edit.setVisibility(View.GONE);
+                        btn_delete.setVisibility(View.GONE);
+                    }
+
+                    if (!CredentialsPrefs.isLoggedIn()) {
+                        btn_fav.setVisibility(View.GONE);
+                        btn_unfav.setVisibility(View.GONE);
+                    }
+                } catch (Exception e) {
+
+                }
+
             }
-            if (genresText.trim().isEmpty()) genresText = getResources().getString(R.string.text_unkown);
-            genres.setText(genresText);
-        } catch (Exception e) {
-            genres.setText(getResources().getString(R.string.text_unkown));
-        }
-        try {
-            review.setHtmlFromString(book.getReview(), new HtmlTextView.RemoteImageGetter());
-        } catch (Exception e) {
-            review.setHtmlFromString(" ", null);
-        }
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable error, JSONObject responseBody) {
+                displayToast("Có lỗi xảy ra!");
+            }
+        });
     }
 }

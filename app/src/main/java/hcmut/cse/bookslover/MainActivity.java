@@ -294,7 +294,7 @@ public class MainActivity extends AppCompatActivity
 
     private void showBookDetails(Book book) {
         Intent intent = new Intent(this, BookDetailsActivity.class);
-        intent.putExtra("data", gson.toJson(book, Book.class).toString());
+        intent.putExtra("bookId", book.get_id());
         startActivityForResult(intent, 3);
     }
 
@@ -323,7 +323,7 @@ public class MainActivity extends AppCompatActivity
             navMenu.findItem(R.id.nav_favorite_books).setVisible(false);
             navMenu.findItem(R.id.nav_posted_books).setVisible(false);
             if (type != 1) {
-                setTitle("Book Lovers");
+                setTitle("Tất cả sách");
                 type = 1;
                 closeMenuSearch();
                 clearSearch();
@@ -459,7 +459,7 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.nav_all_books) {
             if (type != 1) {
                 type = 1;
-                setTitle("Book Lovers");
+                setTitle("Tất cả sách");
                 closeMenuSearch();
                 clearSearch();
                 mSearchAction.setVisible(true);

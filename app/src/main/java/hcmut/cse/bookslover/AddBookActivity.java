@@ -33,7 +33,6 @@ import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.sufficientlysecure.htmltextview.HtmlTextView;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
