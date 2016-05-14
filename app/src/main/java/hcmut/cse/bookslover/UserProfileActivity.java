@@ -12,7 +12,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.MenuItem;
@@ -49,6 +48,7 @@ import hcmut.cse.bookslover.utils.CredentialsPrefs;
 import hcmut.cse.bookslover.utils.UserAdapter;
 import hcmut.cse.bookslover.utils.ImageHandler;
 
+import com.getbase.floatingactionbutton.FloatingActionButton;
 
 public class UserProfileActivity extends AppCompatActivity {
     int REQUEST_CAMERA = 0, SELECT_FILE = 1;
@@ -61,6 +61,9 @@ public class UserProfileActivity extends AppCompatActivity {
     private UserAdapter adapter;
     boolean change = false;
     ProgressBar progressBar;
+    FloatingActionButton btnLocation;
+    FloatingActionButton btnEdit;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,6 +79,9 @@ public class UserProfileActivity extends AppCompatActivity {
 
         nameTV.setText(CredentialsPrefs.getCurrentUser().getName());
         emailTV.setText(CredentialsPrefs.getCurrentUser().getEmail());
+
+        btnLocation = (FloatingActionButton) findViewById(R.id.user_location_btn);
+        btnEdit = (FloatingActionButton) findViewById(R.id.user_edit_btn);
 
         progressBar = (ProgressBar) findViewById(R.id.loading);
         //load avatar
@@ -110,27 +116,22 @@ public class UserProfileActivity extends AppCompatActivity {
             }
         });
 
-        //edit button click
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-
+        btnEdit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getApplicationContext(), EditUserActivity.class);
                 startActivityForResult(intent, 2);
-//                Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
-//                startActivityForResult(intent, 2);
             }
         });
-
+        btnLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.menu_main, menu);
-//        return true;
-//    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

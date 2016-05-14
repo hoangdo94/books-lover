@@ -56,14 +56,12 @@ import hcmut.cse.bookslover.utils.APIRequest;
 import hcmut.cse.bookslover.utils.CommentAdapter;
 import hcmut.cse.bookslover.utils.CredentialsPrefs;
 import com.getbase.floatingactionbutton.FloatingActionButton;
-import com.getbase.floatingactionbutton.FloatingActionsMenu;
 
 
 public class BookDetailsActivity extends AppCompatActivity {
     String bookId;
     Book book;
     PopupWindow popupWindow;
-    FloatingActionsMenu btn_menu;
     FloatingActionButton btn_comment;
     FloatingActionButton btn_edit;
     FloatingActionButton btn_delete;
@@ -107,7 +105,6 @@ public class BookDetailsActivity extends AppCompatActivity {
         review = (TextView) findViewById(R.id.tv_review);
         poster = (TextView) findViewById(R.id.tv_poster_info);
         back_layout = (RelativeLayout) findViewById(R.id.back_dim_layout);
-        btn_menu = (FloatingActionsMenu) findViewById(R.id.btn_menu);
         btn_comment = (FloatingActionButton) findViewById(R.id.book_fab_btn);
         btn_edit = (FloatingActionButton) findViewById(R.id.book_edit_btn);
         btn_delete = (FloatingActionButton) findViewById(R.id.book_del_btn);
