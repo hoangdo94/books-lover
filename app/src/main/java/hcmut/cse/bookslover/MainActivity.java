@@ -134,7 +134,9 @@ public class MainActivity extends AppCompatActivity
                     .load(CredentialsPrefs.getCurrentUser().getAbsoluteAvatarUrl())
                     .resize(120, 120).centerCrop().into(avatar);
         } else if (requestCode == 3) { // book details
-            if (resultCode == RESULT_OK) {
+            if (type == 3) {
+                fetchInitialData();
+            } else if (resultCode == RESULT_OK) {
                 if(data.getBooleanExtra("deleted", false)) {
                     fetchInitialData();
                 }

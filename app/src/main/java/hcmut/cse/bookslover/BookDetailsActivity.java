@@ -55,6 +55,8 @@ import hcmut.cse.bookslover.models.User;
 import hcmut.cse.bookslover.utils.APIRequest;
 import hcmut.cse.bookslover.utils.CommentAdapter;
 import hcmut.cse.bookslover.utils.CredentialsPrefs;
+import hcmut.cse.bookslover.utils.DateHelper;
+
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 
@@ -688,7 +690,9 @@ public class BookDetailsActivity extends AppCompatActivity {
                 Gson gson = new Gson();
                 try {
                     User user = gson.fromJson(responseBody.getJSONObject("data").toString(), User.class);
-                    poster.setText(Html.fromHtml("Đăng bởi <b>"+user.getUsername()+"</b> lúc <i>" + book.getCreatedAt() + "</i><br/>Chỉnh sửa lần cuối lúc <i>" + book.getUpdatedAt() + "</i>"));
+                    poster.setText(Html.fromHtml("Đăng bởi <b>"+user.getUsername()+"</b> vào <i>"
+                            + DateHelper.getTimeAgo(book.getCreatedAt()) + "</i><br/>Chỉnh sửa lần cuối vào <i>"
+                            + DateHelper.getTimeAgo(book.getUpdatedAt()) + "</i>"));
                 } catch(Exception e) {
 
                 }
