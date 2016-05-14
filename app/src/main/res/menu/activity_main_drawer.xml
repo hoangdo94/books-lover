@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <group android:checkableBehavior="single" android:id="@+id/menu_section">
-        <item android:id="@+id/nav_all_books" android:icon="@android:drawable/ic_menu_add"
+        <item android:id="@+id/nav_all_books" android:icon="@drawable/ic_book_list_black"
             android:title="Tất cả sách" />
-        <item android:id="@+id/nav_posted_books" android:icon="@android:drawable/ic_menu_edit"
+        <item android:id="@+id/nav_posted_books" android:icon="@drawable/ic_book_added_black"
             android:title="Sách đã đăng" />
-        <item android:id="@+id/nav_favorite_books" android:icon="@android:drawable/ic_menu_edit"
+        <item android:id="@+id/nav_favorite_books" android:icon="@drawable/ic_book_favorite_black"
             android:title="Sách yêu thích" />
     </group>
     <group android:checkableBehavior="single" android:id="@+id/menu_top">
-        <item android:id="@+id/nav_new" android:icon="@android:drawable/ic_menu_edit"
+        <item android:id="@+id/nav_new" android:icon="@drawable/ic_book_add_black"
             android:title="Thêm sách mới" />
     </group>
     <group android:checkableBehavior="single" android:id="@+id/menu_bottom">
-        <item android:id="@+id/nav_logout" android:icon="@android:drawable/ic_menu_delete"
+        <item android:id="@+id/nav_logout" android:icon="@drawable/ic_person_authen_black"
             android:title="Đăng xuất" />
     </group>
 
