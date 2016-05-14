@@ -38,6 +38,10 @@
             android:layout_marginTop="45dp"
             android:textSize="25sp"
             android:textColor="#FFFFFF"
+            android:shadowColor="#000"
+            android:shadowDx="0"
+            android:shadowDy="0"
+            android:shadowRadius="25"
             android:layout_gravity="center"/>
 
         <TextView
@@ -45,6 +49,10 @@
             android:layout_height="wrap_content"
             android:id="@+id/emailTV"
             android:textColor="#FFFFFF"
+            android:shadowColor="#000"
+            android:shadowDx="0"
+            android:shadowDy="0"
+            android:shadowRadius="25"
             android:layout_gravity="center"
             android:textSize="20sp"
             android:layout_marginTop="75dp"/>
