@@ -84,7 +84,7 @@ public class CommentAdapter  extends ArrayAdapter<Comment> {
         Date curDate = currentDate();
         long now = curDate.getTime();
         if (time > now || time <= 0) {
-            return null;
+            return "Vừa xong";
         }
 
         int dim = getTimeDistanceInMinutes(time);

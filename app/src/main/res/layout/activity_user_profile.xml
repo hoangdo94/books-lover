@@ -10,7 +10,7 @@
     tools:context=".UserProfileActivity">
 
     <include layout="@layout/activity_main_user_profile"/>
-    <include layout="@layout/activity_edit_user_profile"/>
+    <!--<include layout="@layout/activity_edit_user_profile"/>-->
 
     <com.getbase.floatingactionbutton.FloatingActionsMenu
         android:id="@+id/btn_menu"
