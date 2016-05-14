@@ -112,5 +112,14 @@
             android:layout_below="@+id/tv_review_label"
             android:layout_alignParentStart="true"/>
 
+        <TextView
+            android:id="@+id/tv_poster_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tv_review"
+            android:layout_alignParentStart="true"
+            android:paddingTop="15dp"
+            android:textColor="#999"/>
+
     </RelativeLayout>
 </ScrollView>

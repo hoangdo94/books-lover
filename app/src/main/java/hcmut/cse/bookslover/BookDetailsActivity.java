@@ -9,6 +9,7 @@ import android.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
+import android.text.Html;
 import android.text.TextWatcher;
 import android.view.Display;
 import android.view.Gravity;
@@ -50,6 +51,7 @@ import cz.msebera.android.httpclient.message.BasicHeader;
 import cz.msebera.android.httpclient.protocol.HTTP;
 import hcmut.cse.bookslover.models.Book;
 import hcmut.cse.bookslover.models.Comment;
+import hcmut.cse.bookslover.models.User;
 import hcmut.cse.bookslover.utils.APIRequest;
 import hcmut.cse.bookslover.utils.CommentAdapter;
 import hcmut.cse.bookslover.utils.CredentialsPrefs;
@@ -59,6 +61,7 @@ import com.getbase.floatingactionbutton.FloatingActionsMenu;
 
 public class BookDetailsActivity extends AppCompatActivity {
     String bookId;
+    Book book;
     PopupWindow popupWindow;
     FloatingActionsMenu btn_menu;
     FloatingActionButton btn_comment;
@@ -83,6 +86,7 @@ public class BookDetailsActivity extends AppCompatActivity {
     TextView year;
     TextView genres;
     TextView review;
+    TextView poster;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,7 +96,7 @@ public class BookDetailsActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        final Intent intent = getIntent();
+        Intent intent = getIntent();
         bookId = intent.getStringExtra("bookId");
 
         cover = (ImageView) findViewById(R.id.img_cover);
@@ -101,6 +105,7 @@ public class BookDetailsActivity extends AppCompatActivity {
         year = (TextView) findViewById(R.id.tv_year);
         genres = (TextView) findViewById(R.id.tv_genres);
         review = (TextView) findViewById(R.id.tv_review);
+        poster = (TextView) findViewById(R.id.tv_poster_info);
         back_layout = (RelativeLayout) findViewById(R.id.back_dim_layout);
         btn_menu = (FloatingActionsMenu) findViewById(R.id.btn_menu);
         btn_comment = (FloatingActionButton) findViewById(R.id.book_fab_btn);
@@ -179,7 +184,8 @@ public class BookDetailsActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent editBook = new Intent(getApplicationContext(), AddBookActivity.class);
-                editBook.putExtra("book", intent.getStringExtra("data"));
+                Gson gson = new Gson();
+                editBook.putExtra("book", gson.toJson(book, Book.class).toString());
                 startActivityForResult(editBook, 2);
             }
         });
@@ -609,9 +615,8 @@ public class BookDetailsActivity extends AppCompatActivity {
             public void onSuccess(int statusCode, Header[] headers, final JSONObject responseBody) {
                 try {
                     JSONObject bkjson = responseBody.getJSONObject("data");
-                    System.out.println(bkjson.toString());
                     Gson gson = new Gson();
-                    Book book = gson.fromJson(bkjson.toString(), Book.class);
+                    book = gson.fromJson(bkjson.toString(), Book.class);
 
                     Picasso.with(getApplicationContext())
                             .load(book.getAbsoluteCoverUrl())
@@ -651,7 +656,9 @@ public class BookDetailsActivity extends AppCompatActivity {
                         review.setText("");
                     }
 
-                    if (!CredentialsPrefs.isLoggedIn() || (CredentialsPrefs.isLoggedIn() && !CredentialsPrefs.getCurrentUser().get_id().equals(book.getUserId()))) {
+                    setTitle(book.getTitle());
+
+                    if (!CredentialsPrefs.isLoggedIn() || (CredentialsPrefs.isLoggedIn() && !CredentialsPrefs.getCurrentUser().getAdmin() && !CredentialsPrefs.getCurrentUser().get_id().equals(book.getUserId()))) {
                         btn_edit.setVisibility(View.GONE);
                         btn_delete.setVisibility(View.GONE);
                     }
@@ -660,6 +667,8 @@ public class BookDetailsActivity extends AppCompatActivity {
                         btn_fav.setVisibility(View.GONE);
                         btn_unfav.setVisibility(View.GONE);
                     }
+
+                    fetchPosterInfo();
                 } catch (Exception e) {
 
                 }
@@ -668,6 +677,25 @@ public class BookDetailsActivity extends AppCompatActivity {
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable error, JSONObject responseBody) {
                 displayToast("Có lỗi xảy ra!");
+            }
+        });
+    }
+
+    private void fetchPosterInfo() {
+        APIRequest.get("users/" + book.getUserId(), null, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, final JSONObject responseBody) {
+                Gson gson = new Gson();
+                try {
+                    User user = gson.fromJson(responseBody.getJSONObject("data").toString(), User.class);
+                    poster.setText(Html.fromHtml("Đăng bởi <b>"+user.getUsername()+"</b> lúc <i>" + book.getCreatedAt() + "</i><br/>Chỉnh sửa lần cuối lúc <i>" + book.getUpdatedAt() + "</i>"));
+                } catch(Exception e) {
+
+                }
+            }
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable error, JSONObject responseBody) {
+
             }
         });
     }
