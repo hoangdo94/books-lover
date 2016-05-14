@@ -51,4 +51,27 @@
     </string>
     <string name="title_activity_login">Đăng nhập</string>
     <string name="search_hint">Tên sách, tác giả, thể loại ...</string>
+    <string name="date_util_term_less">less than</string>
+    <string name="date_util_term_a">a</string>
+    <string name="date_util_term_an">an</string>
+
+    <string name="date_util_unit_second">giây</string>
+    <string name="date_util_unit_seconds">vài giây</string>
+    <string name="date_util_unit_minute">phút</string>
+    <string name="date_util_unit_minutes">vài phút</string>
+    <string name="date_util_unit_hour">tiếng</string>
+    <string name="date_util_unit_hours">vài tiếng</string>
+    <string name="date_util_unit_day">ngày</string>
+    <string name="date_util_unit_days">vài ngày</string>
+    <string name="date_util_unit_month">tháng</string>
+    <string name="date_util_unit_months">vài tháng</string>
+    <string name="date_util_unit_year">năm</string>
+    <string name="date_util_unit_years">vài năm</string>
+
+    <string name="date_util_prefix_lt">less than a</string>
+    <string name="date_util_prefix_about">về</string>
+    <string name="date_util_prefix_over">hơn</string>
+    <string name="date_util_prefix_almost">almost</string>
+
+    <string name="date_util_suffix">trước</string>
 </resources>

@@ -31,6 +31,15 @@
             android:textAppearance="@android:style/TextAppearance.Small"
             android:layout_marginLeft="10dp"
             android:textColor="#8A000000"/>
+
+        <TextView
+            android:id="@+id/cm_time_ago"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="@android:style/TextAppearance.Small"
+            android:layout_marginLeft="10dp"
+            android:textColor="#d3d3d3"
+            android:text="Vừa xong"/>
     </LinearLayout>
 
 </LinearLayout>
