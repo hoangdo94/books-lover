@@ -118,6 +118,8 @@ public class UserProfileActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(getApplicationContext(), EditUserActivity.class);
                 startActivityForResult(intent, 2);
+//                Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
+//                startActivityForResult(intent, 2);
             }
         });
 
