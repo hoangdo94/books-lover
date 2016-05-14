@@ -1,6 +1,9 @@
 package hcmut.cse.bookslover;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.Toast;
@@ -24,42 +27,48 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        // Pushbots
-        Pushbots.sharedInstance().init(this);
+        if (isOnline()) {
+            // Pushbots
+            Pushbots.sharedInstance().init(this);
 
-        // Authenticate
-        CredentialsPrefs.setPrefs(getSharedPreferences(CredentialsPrefs.PREFS_NAME, 0));
-        CredentialsPrefs.fetchSavedCredentials();
-        final String username = CredentialsPrefs.getUsername();
-        final String password = CredentialsPrefs.getPassword();
-
-        if (!username.isEmpty() && !password.isEmpty()) {
-            Toast.makeText(getApplicationContext(), "Đang xác thực thông tin đăng nhập...", Toast.LENGTH_SHORT).show();
             // Authenticate
-            APIRequest.authenticate(username, password, new JsonHttpResponseHandler() {
-                @Override
-                public void onSuccess(int statusCode, Header[] headers, JSONObject r) {
-                    try {
-                        int status = r.getInt("status");
-                        if (status == 1) {
-                            Gson gson = new Gson();
-                            User user = gson.fromJson(r.getJSONObject("data").toString(), User.class);
-                            Pushbots.sharedInstance().setAlias(user.get_id());
-                            CredentialsPrefs.saveCredentials(username, password, user);
+            Toast.makeText(getApplicationContext(), "Kiểm tra thông tin đăng nhập...", Toast.LENGTH_SHORT).show();
+            CredentialsPrefs.setPrefs(getSharedPreferences(CredentialsPrefs.PREFS_NAME, 0));
+            CredentialsPrefs.fetchSavedCredentials();
+            final String username = CredentialsPrefs.getUsername();
+            final String password = CredentialsPrefs.getPassword();
+
+            if (!username.isEmpty() && !password.isEmpty()) {
+
+                // Authenticate
+                APIRequest.authenticate(username, password, new JsonHttpResponseHandler() {
+                    @Override
+                    public void onSuccess(int statusCode, Header[] headers, JSONObject r) {
+                        try {
+                            int status = r.getInt("status");
+                            if (status == 1) {
+                                Gson gson = new Gson();
+                                User user = gson.fromJson(r.getJSONObject("data").toString(), User.class);
+                                Pushbots.sharedInstance().setAlias(user.get_id());
+                                CredentialsPrefs.saveCredentials(username, password, user);
+                            }
+                        } catch (JSONException e) {
+
                         }
-                    } catch (JSONException e) {
-
+                        startMainActivity();
                     }
-                    startMainActivity();
-                }
 
-                @Override
-                public void onFailure(int statusCode, Header[] headers, Throwable e, JSONObject r) {
-                    startMainActivity();
-                }
-            });
+                    @Override
+                    public void onFailure(int statusCode, Header[] headers, Throwable e, JSONObject r) {
+                        startMainActivity();
+                    }
+                });
+            } else {
+                startMainActivity();
+            }
         } else {
-            startMainActivity();
+            Toast.makeText(getApplicationContext(), "Books Lover yêu cầu kết nối Internet để hoạt động. Xin vui lòng bật kết nối Internet trước khi sử dụng!!", Toast.LENGTH_LONG).show();
+            finish();
         }
     }
 
@@ -67,5 +76,11 @@ public class SplashActivity extends AppCompatActivity {
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
         finish();
+    }
+
+    boolean isOnline() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 }
